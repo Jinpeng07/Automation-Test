@@ -1,0 +1,260 @@
+# Day1
+
+## 输入输出
+
+```
+1.输出:
+print("sdfsdffs")
+print输出是默认换行
+消除默认换行:
+print("xxxx",end='')
+
+2.输入:
+msg=input("提示信息")
+会阻塞,等待输入
+得到的数据都是字符串
+```
+
+## 占位符
+
+```
+%d,整数，比如1,2,3,4等就是整数,没有小数点
+%f,浮点，比如20.22,30.33,有小数点的,就叫浮点数
+%s,字符串,比如"我是字符串",'我也是字符串'
+
+a=int(input("请输入你的数字:"))
+print("你输入的数字是:%d"%a)
+print("你输入的有小数的是:%0.2f"%a)
+print("你输入的信息是:%s"%a)
+# 占位符输出多个变量
+print("你的用户名是:%s,你的密码是:%s"%(name,password))
+```
+
+## help函数
+
+```
+1.功能:可以查看别的内置函数的用法
+2.使用:help(内置函数的名字)
+```
+
+## 变量
+
+```
+#打印变量存储的地址,这地址是执行内存空间的,这个内存空间就是存储的数据
+print(id(a))
+
+变量的类型:用type(变量名)可以查出变量里存储的数据类型
+```
+
+# Day2
+
+## 数据类型
+
+```
+Python3 中有六个标准的数据类型：
+Number（数字）
+String（字符串）
+List（列表）
+Tuple（元组）
+Sets（集合）
+Dictionary（字典）
+
+Number类型:整型和浮点型
+注意:
+1.如果是除法运算,总是返回一个浮点型
+10/2==5.0
+2.如果要取整,可以使用//
+10//3==3
+```
+
+## 数据类型-字符串介绍
+
+```
+单引号或双引号包含的都是字符串
+Python 没有单独的字符类型，一个字符就是长度为1的字符串
+有时候,字符串中需要包含单引号或双引号,这时候怎么办?
+单包双,双包单
+print("我在学习'python'")
+print('我在学习"python"')
+```
+
+## 获取字符串中的字符
+
+```
+#注意,下标可以是负数,-1表示最后一个字符
+```
+
+## 转义
+
+```
+转义字符不是普通的字符,是有特殊含义的字符,比如\n表示换行,并不会打印出\n字符串
+print("我是\n程序员")
+我是
+程序员
+
+反斜杠可以用来转义，使用r可以让反斜杠不发生转义
+print(r'我是\n程序员')
+#我是\n程序员
+```
+
+## 字符串的连接和重复
+
+```
+字符串可以用+运算符连接在一起，用*运算符重复
+
+mystr="hello"
+mystr2="world"
+print(mystr+mystr2)#helloworld
+print(mystr*3)#hellohellohello
+```
+
+## 字符串不能改变
+
+```
+字符串中的字符不能改变,如:mystr="hello"
+mystr[0]="k"#报错
+```
+
+## 截取字符串(切片)
+
+```
+语法:str[起始:结束:步长]  
+	说明:
+		起始-结束是区间,步长是截取字符串时跳过的字符数量=步长-1
+		起始,结束,步长**都是可写可不写**,选取区间属于**左闭右开(**包头不包尾),结束不包括结束本身
+		
+#正数(默认),那从左到右，起始默认为0，结束默认为len(str)
+
+#负数,那么就是从右到左，起始默认为len(str)-1，结束默认为-1
+
+#如果要切到数据,那么**切片方向和起始和结束方向一致**
+
+mystr="abcdefg"
+print(mystr[0:6:2])#ace
+
+mystr="abcdefg"
+print(mystr[2:])#从下标为2的位置切到最后
+
+print(mystr[::-1])#gfedcba
+```
+
+## 判断字符串
+
+```
+print(a.isdigit())#为纯数字
+print(a.isupper())#有大写字母且没有小写字母
+print(a.islower())#有小写字母且没有大写字母
+print(a.isspace())#为纯空格
+print(a.isalpha())#为纯字母
+print(a.isalnum())#为字母或数字
+```
+
+## 多行字符串
+
+```
+使用三引号('''或""")可以指定一个多行字符串
+
+如果多行注释前面有变量来接,那么就变为多行字符串
+mystr='''sfsfdsf
+dfasfd
+sdfasdfa
+fdafsf
+'''
+
+print(mystr)
+```
+
+## 级联字符串
+
+```
+按字面意义级联字符串，如"this " "is " "string"会被自动转换为this is string
+print("this" "is" "string")#thisisstring
+```
+
+## 字符串的处理
+
+### 获取字符串长度(len)
+
+```
+len(str):通过len函数计算字符串的长度 (重点)
+```
+
+### 获取子串出现的次数(count)
+
+```
+string.count(str, beg= 0,end=len(string)):返回 str 在 string 里面出现的次数，如果 beg 或者 end 指定则返回指定范围内 str 出现的次数
+```
+
+### 替换replace()
+
+```
+newstr=string.replace(str1, str2 [, max]):把 将字符串中的 str1 替换成 str2,如果 max 指定，则替换不超过 max 次  (重点)
+```
+
+### 截取split()
+
+```
+string.split(str="", num):以 str 为分隔符截取字符串，如果 num 有指定值，则仅截取num次
+```
+
+### 获取子串的位置find()
+
+```
+string.find(str, beg, end):从字符串中查找子串所在位置, 没找到返回-1 
+```
+
+### 索引index()
+
+```
+string.index(str, beg=0, end):跟find()方法一样，只不过如果str不在字符串中会报一个异常
+```
+
+### 修剪字符串strip()
+
+```
+获得字符串修剪左右两侧空格,strip(要删除的字符)  
+
+mystr="     maker      "
+print(mystr.strip())#maker
+mystr="xxxxxxmakerxxxx"
+print(mystr.strip('x'))#maker
+```
+
+### 修饰字符串join()
+
+```
+返回通过指定字符连接序列中元素后生成的新字符串
+seq=':'
+mystr=("20",'54','10') 元组
+mystr=["20","54","10"] 列表
+print(seq.join(mystr))#20:54:10
+```
+
+### 检查字符串
+
+```
+# 检查字符串是否以指定的字符串开头
+print(str1.startswith('He'))  # True
+# 检查字符串是否以指定的字符串结尾
+print(str1.endswith('!'))  # True
+# 字符串首字母大写
+print(str1.capitalize())  # Hello, world!
+# 字符串变大写
+print(str1.upper())  # HELLO, WORLD!
+# 字符串变小写
+print(str1.lower())
+# 字符串的每个单词首字母大写
+print(str1.title()) #Hello,World
+```
+
+### 对齐字符串
+
+```
+# 将字符串以指定的宽度居中并在，两侧填充指定的字符
+print(str1.center(20, '*'))
+# 将字符串以指定的宽度靠左放置，左侧填充指定的字符
+print(str1.ljust(20, '*'))
+# 将字符串以指定的宽度靠右放置，左侧填充指定的字符
+print(str1.rjust(20, '*'))
+```
+

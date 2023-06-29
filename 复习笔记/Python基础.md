@@ -964,6 +964,148 @@ int、float
 序列为键,某个数为值(fromkeys),返回列表,元素是元组(items)
 ```
 
+## 函数的定义
+
+```
+1.什么是函数
+函数是组织好的,可重复使用的,用来实现单一或相关功能的代码块
+2.函数有内建函数和用户自定义函数
+3.定义函数的格式:
+def 函数名():
+	代码块
+调用函数:
+	函数名()
+```
+
+## 参数类型
+
+```
+参数类型有,必需参数,关键字参数,默认参数,不定长参数
+
+1.必需参数
+形参有多少个,实参必须有多少个
+def add(a,b):
+    return a+b
+
+# add(10)#报错
+add(10,20)
+
+2.关键字参数
+使用关键字参数允许函数调用的时候实参的顺序和形参的顺序可以不一致，可以使用关键字进行自动的匹配
+def Mymsg(name,age,sex,height):
+    print("name=",name)
+    print("age=",age)
+    print("sex=",sex)
+    print("height=",height)
+#如果调用时,使用了关键字参数,那么后面的参数都要用关键字参数
+Mymsg("maker",sex="男",age=18,height="180cm")
+
+3.默认参数
+如果形参有值,那么实参可传可不传,不传,默认使用形参的值,如果传,那么使用实参的值
+如果形参有默认值,那么这个形参后面的参数都必须有默认值
+def myadd(a,b=20):
+    return a+b
+print(myadd(20))#40
+print(myadd(20,50))#70
+
+4.不定长参数
+你可能需要一个函数能处理比当初声明时更多的参数。这些参数叫做不定长参数。
+把参数打包成元组给函数调用,如果在函数调用时没有指定参数，它就是一个空元组
+def mytest(*arr):
+    print(arr)#(1,2,3,4,5)
+mytest(1,2,3,4,5)
+
+def mytest02(**arr):
+    print(arr)##{'name': 'maker', 'age': 18}
+mytest02(name="maker",age=18)
+```
+
+## 参数传递方式
+
+```
+1.不可变类型：如 整数、字符串、元组。如fun(a)，传递的只是a的值，没有影响a对象本身
+2.可变类型：如 列表，字典。如 fun(list)，则是将 list 真正的传过去，修改后fun函数外部的la也会受影响
+
+1.实参传人函数中,实参不会改变
+#形参的a和实参的a不是同一个
+def mytest(a):#a=10
+    a=20
+
+a=10
+mytest(a)#mytest(10)
+print(a)
+
+2.实参传入函数中,实参会改变
+def mytest(mylist):#接收的也是空间地址
+    print(id(mylist))
+    mylist.append(100)
+
+mylist=[1,2,3]
+print(id(mylist))
+mytest(mylist)#传递的是空间地址
+print(mylist)
+```
+
+## return语句
+
+```
+作用：表示一个函数执行完毕之后得到的结果返回给调用者
+return后面没有什么的语句返回None
+
+return 1,2,3,4#元组
+```
+
+## 作用域
+
+```
+作用域:就是你定义的变量有效果的范围
+变量有全局变量,有局部变量
+
+#在for循环,if语句,while里的定义的是全局变量
+for i in range(10):
+    b=20
+print(b)
+
+if True:
+    c=30
+print(c)
+
+while c<31:
+    d=30
+    c+=1
+print(d)
+
+当全局变量和局部变量同名时
+a=10
+def mytest():
+    #如果想要在函数内修改全局变量,那么可以使用global来声明
+    global a
+    a=30
+    #如果要使用全局的a,那么可以使用传参
+print(a)#10
+mytest()
+print(a)#30
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

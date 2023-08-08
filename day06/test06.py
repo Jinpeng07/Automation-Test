@@ -49,11 +49,15 @@
 # while c<31:
 #     d=30
 #     c+=1
-# print(d)
-a=10
-def mytest():
-    global a
-    a=30
-print(a)#10
-mytest()
-print(a)
+# # print(d)
+# a=10
+# def mytest():
+#     global a
+#     a=30
+# print(a)#10
+# mytest()
+# print(a)
+# w = "wang"
+# print(f'my name is {w}')
+# help(int)
+print("mystring"[4:1:-1])

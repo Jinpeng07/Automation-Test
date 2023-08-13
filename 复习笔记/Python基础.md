@@ -941,7 +941,7 @@ int、float
 3.访问:字典[键]->值   
 4.获取所有键(keys),获取所有值(values)
 5.字典的操作:增加([],update),删(pop,popitem,del),清空(clear),删除字典(del),拷贝(copy),
-序列为键,某个数为值(fromkeys),返回列表,元素是元组(items)
+返回列表,元素是元组(items)
 ```
 
 ## 函数的定义
@@ -1069,37 +1069,228 @@ print(a)#30
 
 
 
+# Day7
+
+## Lambda
+
+```
+lambda可以创建小型匿名函数
+lambda函数能接收任何数量的参数但只能返回一个表达式的值
+格式:
+lambda 参数:函数体
+
+注意：
+lambda定义的是单行函数，如果需要复杂的函数，应该定义普通函数
+lambda参数列表可以包含多个参数，如 lambda x, y: x + y
+lambda中的表达式不能含有命令，而且只限一条表达式
+
+作用：
+对于单行函数，使用lambda可以省去定义函数的过程，让代码更加精简。
+在非多次调用的函数的情况下，lambda表达式即用既得，提高性能
+可以做为函数的参数使用(重点)
+
+def func(a,b,f):
+    n=f(a,b)
+    n+=10
+    print(n)
+
+func(20,30,lambda x,y:x+y)
+```
+
+## 函数-文档字符串
+
+```
+函数的文档字符串是用来说明函数的功能
+如:
+def add(a,b):
+	'''这个函数是用来返回2个数相加的结果'''
+	return a+b
+print(add.__doc__)
+```
+
+## 模块导入(重点)(难点)
+
+```
+将整个模块(somemodule)导入，格式为： import 模块名
+从某个模块中导入某个函数,格式为： from 模块名 import 函数名
+从某个模块中导入多个函数,格式为： from 模块名 import 函数名1, 函数名2, 函数名3
+将某个模块中的全部函数导入，格式为： from 模块名 import *
+```
+
+## 包
+
+```
+包将有联系的模块组织到一起,就是放在同一文件夹下,并在这个文件夹下创建一个__init__.py的文件,这个文件夹就叫包
+作用:控制模块的导入
+
+__init__.py内容:
+#这里没有写mytest03,也就是说,mytest03不能被别人导入
+#from mypage import *模式下,mytest03不能使用
+__all__=['mytest01','mytest02']
+```
+
+## 文件读写介绍(重点)
+
+```
+1.打开文件
+2.文件读写
+3.关闭文件
+
+格式:
+f=open('文件名','打开方式')#打开文件
+f.read()或f.write()#文件读写
+f.close()#关闭文件
+```
+
+## 打开文件(重点)
+
+```
+r 只读方式打开文件,从文件开头开始读,默认方式
+w 只写方式打开文件,如果文件存在,就覆盖,如果不存在就创建文件
+a 打开文件进行追加,写的内容会从原内容的最后开始添加,如果文件不存在,会创建文件
+rb 二进制格式只读方式打开文件,从文件开头开始读,读出的是二进制
+wb 二进制格式只写方式打开文件,如果文件存在,就覆盖,如果不存在就创建文件
+ab 二进制格式打开文件进行追加,写的内容会从原内容的最后开始添加,如果文件不存在,会创建文件
+r+ 读写模式打开文件,从文件开头开始读写
+w+ 读写模式打开文件,从文件开头开始读写,如果文件存在,就覆盖,如果不存在就创建文件
+a+ 读写模式打开文件,从原文件的尾部开始,如果文件存在,就覆盖,如果不存在就创建文件
+rb+ 二进制格式读写模式打开文件,从文件开头开始读写
+wb+ 二进制格式读写模式打开文件,从文件开头开始读写,如果文件存在,就覆盖,如果不存在就创建文件
+ab+ 二进制格式读写模式打开文件,从原文件的尾部开始,如果文件存在,就覆盖,如果不存在就创建文件
+```
+
+## 写文件(重点)
+
+```
+说明:
+write("字符串")
+writelines(字符串序列)
+f.writelines(["world","hello","nihao"])
+
+格式一:
+#打开文件
+f=open("1.txt",'w')
+#写文件
+f.write("hello")
+#关闭
+f.close()
+
+格式二:
+with open("2.txt",'w') as f:
+    f.write("nihao")
+    #当离开with模块时,文件会自动关闭
+
+#中文乱码问题 encoding='utf8'
+with open('file/3.txt','w',encoding='utf8') as f2:
+    f2.write('中文')
+    f2.close()
+```
+
+## 读文件(重点)
+
+```
+注意:如果读的数据有中文,也要加encoding='utf8'
+格式一:
+# mystr=f.read()#读所有行,返回的是字符串
+# mystr=f.readline()#读首行,返回的是字符串
+# mystr=f.readlines()#读所有行,返回的是列表,元素有\n
+mystr=f.read().splitlines()#读所有行,返回的是列表,不带\n
+```
+
+## 读写图片,音频,视频(重点)
+
+```
+读写图片,音频,视频要用二进制方式打开文件
+
+#案例,请设计一个通用的,可以复制后缀为.jpg,.png,.mp3,.mp4格式的函数
+# def copy_file(old_file_name, new_file_name, ):
+#     with open(old_file_name, 'rb') as f:
+#         temp = f.read()
+#     with open(new_file_name, 'wb') as f:
+#         f.write(temp)
+#
+#
+# if __name__ == '__main__':
+#     copy_file('with.txt', 'with2.txt')
+```
+
+## CSV文件读写(重点)
+
+```
+#引入csv模块
+import csv
+#写
+with open("1.csv",'w',encoding='utf8',newline='') as f:
+    #####需要把f转换为csv对象#####
+    obj=csv.writer(f)
+    obj.writerow(["id","name","age"])
+    obj.writerow(["1","张三","18"])
+    obj.writerow(["2","李四","19"])
+    
+#读
+with open('1.csv','r',encoding='utf8') as f:
+    obj=csv.reader(f)
+    for i in obj:
+        print(i)
+```
+
+## XML文件读写
+
+```
+XML：可扩展标记语言，标准通用标记语言的子集，是一种用于标记电子文件使其具有结构性的标记语言
+要引入import xml.etree.ElementTree as ET
+
+if __name__ == '__main__'的意思是：当.py文件被直接运行时，if __name__ == '__main__'之下的代码块将被运行；当.py文件以模块形式被导入时，if __name__ == '__main__'之下的代码块不被运行。
+
+import xml.etree.ElementTree as ET
+from xml.dom.minidom import Document
+def WriteXml():
+    #生成一个xml对象
+    doc=Document()
+    #生成标签队,并把标签队添加到doc对象中
+    peo=doc.createElement('dict')
+    doc.appendChild(peo)
+
+    #生成标签队key,放到dict标签对内
+    mykey=doc.createElement('key')
+    peo.appendChild(mykey)
+
+    # 生成内容,并把内容添加到key标签队之间
+    mytext=doc.createTextNode('string1')
+    mykey.appendChild(mytext)
+
+    # 生成标签队string,放到dict标签对内
+    mystring = doc.createElement('string')
+    peo.appendChild(mystring)
+
+    # 生成内容,并把内容添加到key标签队之间
+    mytext2 = doc.createTextNode('Maker')
+    mystring.appendChild(mytext2)
 
 
+    f=open("maker.xml",'w',encoding='utf8')
+    f.write(doc.toprettyxml(indent=''))
+    f.close()
 
 
+WriteXml()
 
+def ReadXml():
+    mylist=[]
+    #打开xml文件,tree代码整个文件
+    tree=ET.parse('maker.xml')
+    #获取根节点
+    root=tree.getroot()
+    ## 遍历所有节点，包括root
+    ## for e in root.iter():
+    for i in root.iter('string'):#遍历string节点
+        #获取节点之间的内容,并存储到列表
+        mylist.append(i.text)
 
+    print(mylist)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+ReadXml()
+```
 
 
 

@@ -1430,7 +1430,7 @@ print(type(mystr))
 ## JSON 数据的读取(重点)
 
 ```
-json.load	打开json文件，并把字符串转换为python的dict数据
+json.load	打开json文件，并把json字符串转换为python的dict数据
 json.loads	将json字符串转换为字典
 
 import json
@@ -1578,6 +1578,355 @@ with open("1.yaml",'r',encoding='utf8') as f:
     for i in res:
         print(i)
 ```
+
+
+
+# Day09
+
+## 面向对象
+
+```
+略
+
+
+名称说明:
+类中定义的变量:类属性
+对象自身定义的变量:对象属性
+成员变量包含类变量和实例变量
+全局变量和局部变量是相对于作用域来说的.
+```
+
+## self介绍(重点,难点)
+
+```
+self,是对象本身
+```
+
+## 构造函数(重点,难点)
+
+```
+1.构造函数是给对象的实例变量赋初始值
+2.当一个对象被创建的时候，第一个被自动调用的函数
+3.语法:
+__init__(参数列表):
+	函数体
+4.构造函数的参数在定义对象时传递,如:m=Maker(实参) ->实参传递到__init__(形参)
+5.如果没有显示定义构造函数,那么系统默认提供一个无参的构造函数,这个无参的构造函数是空函数体
+手动添加了有参的构造函数之后，系统将不再提供无参的构造函数
+```
+
+## 析构函数
+
+```
+1.当删除一个对象时,python解释器也会调用一个函数,做清理工作,这个函数就叫析构函数
+2.格式:
+  __del__(self):
+3.time模块中的sleep(时间)可以暂停代码运行
+4.删除对象用del
+5.当1个变量保存了对象的引用,此时对象引用计数器就加1,
+  当使用del删除变量指向的对象时,引用计数器就减1,当减到0时,就调用析构函数
+6.作用:通常是销毁/删除临时的变量，主要对那些长期占用内存的临时变量进行销毁.有些程序是不结束的或运行很久的
+```
+
+
+
+# Day10
+
+## 魔法方法(了解)
+
+```
+魔法方法:很魔幻
+格式:__xxxx__(self)
+__add__ 加法(两个对象相加时调用)
+__lt__  小于(两个对象比较时调用)
+__str__ 字符串(打印对象时调用)
+
+class Maker():
+    def __add__(self,other):#self=m,other=m2
+        print(self.age)
+        print(other.kk)
+        print("当2个对象相加时,我会被调用")
+        return self.age+other.kk
+
+m=Maker()
+m.age=20
+m2=Maker()
+m2.kk=30
+print(m+m2)#两个对象相加
+```
+
+## 面向对象的三大特征介绍
+
+```
+略
+```
+
+## 封装(重点)
+
+```
+1.封装的概念:把属性和方法封装在一起,并赋予权限
+2.作用:保证内部的高内聚性和与外部的低耦合性
+3.私有成员:
+	1.外部不能直接访问,内部可以直接访问
+	2.在属性或方法名前面加2个下划线就表示该成员是私有的
+	
+class Maker():
+    __age=10,#私有类属性
+
+    def getAge(self):
+        return self.__age
+
+    def setAge(self,age):
+        #判断修改的年龄是否合法
+        if age>=1 and age<=140:
+            self.__age=age
+
+m=Maker()
+# print(m.age)#当类属性为私有时,类外面不能直接操作类属性
+# m.age=1000
+print(m.getAge())
+m.setAge(30)
+print(m.getAge())
+```
+
+## 继承介绍(重点)
+
+```
+1.类与类之间才能继承
+2.作用:简化代码,代码复用
+3.名词解释:父类(基类,超类),子类(派生类)
+4.子类的小括号中写了哪个类,就表示继承了谁(认谁做爹了)
+5.子类拥有父类的所有属性和方法(私有的除外)
+6.继承有单继承和多继承
+7.object是所有类的父类，如果一个类没有显式指明它的父类，则默认为object
+```
+
+## 单继承(重点)
+
+```
+单继承,就是子类继承一个父类(儿子只有一个爹)，不能继承父类私有成员
+
+#父类
+class Father():
+    m="1千万",
+    __mytype="小三",
+
+    def mytest01(self):
+        print("有钱")
+
+    def mytest02(self):
+        print("有房")
+
+    def mytest03(self):
+        print("有颜值")
+
+#子类
+class Son(Father):
+    def myfunc(self):
+        print(self.m)
+        # print(self.__mytype)#报错,不能继承父类私有成员
+
+s=Son()
+s.mytest01()
+s.mytest02()
+s.mytest03()
+print(s.m)
+# print(s.__type)
+s.myfunc()
+```
+
+## 多继承
+
+```
+多继承,就是子类有多个父类(儿子有多个爹)
+继承规则：Python允许多继承。调用顺序：从左到右，先深度再广度
+不建议使用多继承,多继承会增加代码的复杂性
+```
+
+## 继承构造函数和析构函数问题(重点)
+
+```
+1.子类不写构造函数,那么会默认调用从父类继承过来的构造函数
+2.如果重写了__init__ 时，要继承父类的构造方法，可以在子类构造函数中使用 super 关键字或父类名
+3.析构和构造一样
+
+class Father():
+    def __init__(self,name):
+        print("我是Father的构造函数")
+
+
+class Son(Father):
+    def __init__(self):
+        # # super(Son,self).__init__("kk")#调用从父类继承的构造函数
+        # Father.__init__(self,"kk")#调用从父类继承的构造函数
+        print("我是Son的构造函数")
+
+
+s=Son()
+#注意,当子类没有写自己的构造函数,那么就要调用从父类继承过来的构造函数,要注意父类的构造函数是否有参数
+```
+
+## 子类调用父类同名方法
+
+```
+1.当子类的函数和父类的函数同名时,在子类的同名函数中使用super()关键字
+
+class Father():
+    def mytest(self):
+        print("Father")
+
+class Son(Father):
+    def mytest(self):
+        super().mytest()#调用父类的mytest函数
+        print("Son")
+
+s=Son()
+#当父类和子类有同名函数时,子类对象,先调用自己的函数
+s.mytest()
+```
+
+## 重写
+
+```
+简单，略
+```
+
+## 多态(重点)
+
+```
+简单，略
+继承+重写方法
+```
+
+## 错误和异常
+
+```
+错误：通常是指代码中的语法错误，一般初级程序员很常见或者说很容易犯。
+异常:即便Python程序的语法是正确的，在运行它的时候，也有可能发生错误。运行期间检测到的错误被称为异常
+pycharm中错误常有箭头指示出来,异常没有
+```
+
+## 异常的捕获
+
+```
+1.捕获异常的格式:
+try:
+    print(1 / 0)
+except Exception as e:
+    print(e)
+else
+说明:Exception常规错误的基类,把异常的基本信息存储到e中
+
+2.异常处理-except分支else:没有异常执行else下面的代码
+
+3.finally语句:有没有异常都要执行这下面的代码
+def mytest(a,b):
+    return a/b
+
+try:
+    mytest(10,0)
+except Exception as e:
+    print(e)
+    # raise #抛出异常给上一级，不处理
+else:
+    print("没有异常就执行这")
+finally:
+    print("有没有异常都要执行这里的代码")
+
+4.抛出异常:
+	1.raise关键字
+
+5.异常要处理,不管是谁
+def mytest(a,b):
+    return a/b
+def myfunc():
+    try:
+        mytest(10,0)
+    except Exception as e:
+        # print(e)
+        raise #抛出异常
+    else:
+        print("没有异常就执行这")
+    finally:
+        print("有没有异常都要执行这里的代码")
+
+#这里处理myfunc函数抛出的异常
+try:
+    myfunc()
+except Exception as ee:
+    print(ee)
+
+6.自定义异常:
+要继承Exception常规错误的基类
+class ShowInputOut(Exception):
+    def __init__(self,len,flag):
+        super().__init__()
+        self.len=len
+        self.flag=flag
+        
+def main():
+    try:
+        s=input("请输入-->")
+        if len(s)<3:
+            raise ShowInputOut(len(s),3)
+    except ShowInputOut as e:
+        print("你输入长度为%d,长度必须大于%d"%(e.len,e.flag))
+    else:
+        print("没有发生异常")
+
+main()
+```
+
+## OS模块(重点)
+
+```
+from sys import argv,path  #  导入特定的成员
+print('path:',path) # 因为已经导入path成员，所以此处引用时不需要加sys.path
+
+
+import os
+
+path = os.getcwd() # 获取当前执行文件的绝对路径,文件夹的路径
+path = os.path.abspath('.') # 获取当前执行文件的绝对路径,文件夹的路径, 同上
+path = os.path.abspath('..') # 获取当前文件夹的父文件夹路径
+path = os.path.abspath('test10.py') # 获取当前文件的路径
+path = os.path.abspath(__file__) # 获取当前文件的路径, 同上
+
+#获取当前路径下所有文件名
+mylist=os.listdir(os.getcwd())
+print(mylist)
+#修改文件名
+os.rename(os.getcwd()+'/1.txt',os.getcwd()+'/2.txt')
+
+案例:批量修改文件名
+import os
+funFlag = 1 # 1表示添加标志,2表示删除标志
+folderName = './renameDir/'
+#获取指定路径下所有文件的名字
+dirList = os.listdir(folderName)
+#遍历输出所有文件的名字
+for name in dirList:
+	print(name)
+	if funFlag==1:
+		newName='[山哥出品]-'+name
+	elif funFlag==2:
+		num=len('[山哥出品]-')
+		newName=name[num:]
+	print(newName)
+	os.rename(folderName+name,folderName+newName)
+```
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

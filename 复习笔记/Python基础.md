@@ -1918,23 +1918,195 @@ for name in dirList:
 
 
 
+# Day11
+
+## python连接数据库
+
+```
+1.python连接mysql数据库需要下载pymysql模块
+2.步骤:
+	1.连接数据库
+	2.创建游标对象
+	3.通过游标对象操作数据库
+	4.关闭数据库
+	
+db=pymysql.connect(host='127.0.0.1',port=3306,user="root",passwd='123456',db="mysql",charset='utf8')
+
+#查看数据库系统的版本
+cur.execute('select version()')
+#获取查询的结果
+data=cur.fetchall()
+print("数据库系统的版本为:",data)#数据库系统的版本为: (('5.6.25-log',),)
+
+#创建数据库
+cur.execute('drop database if exists mytestcn')#如果有这个名字的数据库就删除
+cur.execute('create database mytestcn')#创建数据库
+
+#查看所在的数据库名字
+cur.execute("select database()")
+#获取查询的结果
+data=cur.fetchall()
+print("所在的数据库名字为:",data)#所在的数据库名字为: (('mysql',),)
+
+#切换数据库,切换到mytestcn数据库中
+cur.execute('use mytestcn')
+
+#查看所在的数据库名字
+cur.execute("select database()")
+#获取查询的结果
+data=cur.fetchall()
+print("所在的数据库名字为:",data)#所在的数据库名字为: (('mytestcn',),)
+
+#创建表格
+#表格要存储(用户名,密码,手机号码,邮箱)
+#创建表格的sql语句
+sql="create table usertable(" \
+    "name varchar(20),passwd varchar(20)," \
+    "iph varchar(20),email varchar(20))"
+
+cur.execute(sql)
+
+#往表格添加数据(增)
+sql="insert into usertable values('李四','123456','13833445566','2342423@qq.com')"
+cur.execute(sql)
+db.commit()
+
+#改表格中的数据(改)
+sql="update usertable set iph='138888888' where name='李四'"
+cur.execute(sql)
+db.commit()
+
+#查看表格的内容
+sql="select * from usertable"
+cur.execute(sql)
+data=cur.fetchall()
+print(data)
+
+#删除数据库(删)
+sql="delete from usertable where name='李四'"
+cur.execute(sql)
+db.commit()
+
+#关闭数据库
+db.close()
+```
+
+## 迭代器的介绍
+
+```
+一、什么是迭代器
+迭代是python中访问集合元素的一种非常强大的一种方式。迭代器是一个可以记住遍历位置的对象，因此不会像列表那样一次性全部生成，而是可以等到用的时候才生成，因此节省了大量的内存资源。迭代器对象从集合中的第一个元素开始访问，直到所有的元素被访问完。迭代器有两个方法：iter（）和next（）方法。
+
+二、可迭代的对象
+类似于list、tuple、str 等类型的数据可以使用for …… in…… 的循环遍历语法从其中依次拿到数据并进行使用，我们把这个过程称为遍历，也称迭代。python中可迭代的对象有list（列表）、tuple（元组）、dirt（字典）、str（字符串）等。
+
+从字面来理解，迭代器指的就是支持迭代的容器，更确切的说，是支持迭代的容器类对象，这里的容器可以是列表、元组等这些 Python 提供的基础容器，也可以是自定义的容器类对象，只要该容器支持迭代即可。
+
+三.Python 迭代器的好处
+使用迭代器的好处是可以节省资源。
+代码减少。
+代码冗余得到极大解决。
+降低代码复杂度。
+它为编码带来了更多的稳定性。
+
+一、迭代器：
+#任何实现了__iter__()和__next__()方法的对象都是迭代器。
+其中，__iter__返回迭代器自身，__next__返回容器中的下一个元素值。
+
+二、生成器：
+具有yield关键字的函数都是生成器。
+yield可以理解为特殊的return，该函数不会释放局部变量。
+生成器自动实现了__iter__()和__next()__()方法，也就是说生成器也是迭代器。
+调用生成器函数，将返回生成器对象，该生成器对象具有迭代器的所有功能。
+```
+
+## 生成迭代器-方法1
+
+```
+1.iter（可迭代数据类型）:生成一个迭代器对象
+2.next（）:返回迭代器中的数据, 并且移动到下一个迭代
+
+#生成迭代器对象
+obj_iter=iter([1,2,3,4,5,6,7,8,9])
+print(next(obj_iter))
+
+#next获取不到数据时,会报StopIteration异常
+# for i in range(10):
+#     print(next(obj_iter))
+```
+
+## 生成迭代器-方法2
+
+```
+1.使用函数,在函数中使用循环,结合yield函数,yield可以理解为特殊的return，该函数不会释放局部变量
+2.yield函数就是在循环中,把数据放到一个迭代对象中,只不过是被调用了才放入
+
+# def mytest():
+#     for i in range(10):
+#         yield i #相当于返回i且把i保存到迭代器对象中
+#
+# #生成迭代对象
+# res=mytest()
+#
+# print(next(res))
+# print(next(res))
 
 
+#生成迭代对象
+res=(i for i in [1,2,3,4])
 
+print(next(res))
+print(next(res))
+for i in res:
+    print(i)
+#一共输出1234， 因为前面已经迭代过2次了
+```
 
+## 自定义迭代器对象
 
+```
+class MyNumbersIterator:
+    def __iter__(self):
+        self.a = 1
+        return self  # 返回迭代器自身
+ 
+    def __next__(self):
+        x = self.a
+        self.a += 1
+        return x
+ 
+ 
+myclass = MyNumbersIterator()
+myiter = iter(myclass)  # 通过调用myclass.__iter__()返回迭代器。
 
+ 
+print(next(myiter))  # 输出 1
+print(next(myiter))  # 输出 2
+print(next(myiter))  # 输出 3
+print(next(myiter))  # 输出 4
+print(next(myiter))  # 输出 5
+```
 
+## 自定义生成器
 
-
-
-
-
-
-
-
-
-
+```
+import sys
+ 
+def fibonacci(n):  # 生成器函数 - 斐波那契，返回n个斐波那契数
+    a, b, counter = 0, 1, 1
+    while counter <= n:  # 生成n个
+        yield a #保存a到迭代器对象，往后继续执行代码
+        a, b = b, a + b  # 返回一个斐波那契数，更新a,b，然后循环计算后面一个
+        counter += 1
+ 
+ 
+f = fibonacci(10)  # f 是一个生成器对象，但它同时具有迭代器的所有功能，因为其自动实现了迭代器协议
+while True:
+    try:
+        print(next(f), end=" ")
+    except StopIteration:
+        sys.exit()
+```
 
 
 

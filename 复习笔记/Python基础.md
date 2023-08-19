@@ -1991,6 +1991,27 @@ db.commit()
 db.close()
 ```
 
+## python的迭代对象和迭代器
+
+```
+可迭代对象和迭代器和区别：迭代器和可迭代对象不是同个概念，区别在于是否有next函数
+
+1.可以直接使用for循环遍历的数据类型就是迭代对象
+
+#判断该数据类型是否为迭代对象
+from collections import Iterable
+
+print(isinstance("hello",Iterable))
+
+2.迭代器,可以被next函数调用,并返回下一个值的对象称为迭代器(iterator)，生成器也是迭代器
+#判断该数据类型是否是迭代器
+from collections import Iterator
+print(isinstance("hello",Iterator))#False
+
+print(isinstance((x for x in range(6)),Iterator))#True
+
+```
+
 ## 迭代器的介绍
 
 ```
@@ -2107,6 +2128,272 @@ while True:
     except StopIteration:
         sys.exit()
 ```
+
+# Day12
+
+## for ... in ... 遍历的原理      
+
+```
+1.内部调用iter函数,将要遍历的迭代器对象作为参数传入
+2.等价调用了__iter__()函数生成迭代器
+3.然后使用next函数去执行迭代器
+'''
+# print(mystr.__iter__())
+# print(iter(mystr))
+it=iter(mystr)
+print(next(it))
+```
+
+## 生成器介绍
+
+```
+生成器本质上也是迭代器，不过它比较特殊。
+以 list 容器为例，在使用该容器迭代一组数据时，必须事先将所有数据存储到容器中，才能开始迭代；而生成器却不同，它可以实现在迭代的同时生成元素。
+也就是说，对于可以用某种算法推算得到的多个数据，生成器并不会一次性生成它们，而是什么时候需要，才什么时候生成。
+
+不仅如此，生成器的创建方式也比迭代器简单很多，大体分为以下 2 步：
+定义一个以 yield 关键字标识返回值的函数；
+调用刚刚创建的函数，即可创建一个生成器。
+```
+
+## 生成器  
+
+```
+def mytest(n):
+    i=0
+    while i<n:
+        yield i
+        i+=1
+#创建生成器
+it=mytest(5)
+#mytest函数返回时使用yield,而不是return,所以这类函数又叫生成器函数
+
+也可以使用for循环遍历生成器函数
+for i in it:
+	print(i)
+```
+
+## 写成类方式来实现生成器
+
+```
+def myrange(n):
+    index=0
+    while index<n:
+        yield index
+        index+=1
+
+
+class Maker():
+    def __init__(self,n):
+        self.n=n
+        
+    def __iter__(self):
+        return myrange(self.n)
+
+m=Maker(20)
+for i in m:
+    print(i)
+```
+
+## 生成器推导式  
+
+```
+class Maker():
+    def __init__(self, n):
+        self.n = n
+
+    def __iter__(self):
+        return (i for i in range(self.n))
+
+
+m = Maker(20)
+for i in m:
+    print(i)
+```
+
+## 进阶使用
+
+```
+略，看不懂
+```
+
+## 装饰器介绍
+
+```
+@装饰器名称
+作用： 给被装饰的对象增加额外的属性或者功能   
+
+原理：  
+1. 装饰器本质上是一个函数(可调用对象) 
+2. 这个函数的参数是一个函数对象(被装饰的函数)    
+3. 这个函数的返回值是一个新的函数对象（基于被装饰的函数添加了额外属性或者功能的函数）
+
+原始语法：
+@decorator
+def function():
+	pass
+
+原始语法：    function = decorator(function) 原函数指向被装饰的新函数
+```
+
+##  装饰器的基本用法 
+
+```
+def Okmyfunc(myfunc):
+    def OKK():
+        myfunc()
+        #增加额外的功能
+        print("银行存款10位数")
+        print("飞机,轮船多艘")
+        print("知心朋友超多")
+    return OKK
+
+
+@Okmyfunc   #myfunc=Okmyfunc(myfunc)
+def myfunc():
+    print("月薪1万左右")
+    print("无房子")
+    print("无车")
+    print("无对象")
+
+myfunc()
+```
+
+## 案例： 统计函数的执行时间  
+
+```
+def collect_time(func):
+    def total_time():
+        begin = time.time()
+        func()
+        end = time.time()
+        return end - begin
+    return total_time
+
+
+@collect_time
+def itertest(): itertest = collect_time(itertest)
+    time.sleep(2)
+
+
+print(itertest())
+```
+
+## 被装饰的函数有返回值
+
+```
+同上
+```
+
+## 被装饰的函数存在参数，并且参数的个数不同   
+
+```
+import time
+
+def funcMaker(func):
+    def start_maker(*args,**kwargs):
+        ret=func(*args,**kwargs)
+        return ret+100
+    return start_maker
+
+@funcMaker
+def myfunc1(a,b):
+    time.sleep(2)
+    return a+b
+
+print(myfunc1(1,2))
+
+
+@funcMaker
+def myfunc2(a,b,c):
+    time.sleep(2)
+    return a+b+c
+
+print(myfunc2(1,2,3))
+```
+
+## 我还是我吗？
+
+```
+def Makerfunc(func):
+    def mytest():
+        func()
+        print("helh")
+    return  mytest
+
+
+@Makerfunc
+def myfunc():
+    print("myfunc")
+
+print(myfunc.__name__)#没有装饰之前是myfunc,装饰之后是mytest
+```
+
+#### 闭包
+
+```
+闭包： 在一个外函数中定义了一个内函数，内函数里运用了外函数的临时变量，并且外函数的返回值是内函数的引用。这样就构成了一个闭包。
+
+def f1():
+    n = 999
+
+    def f2():
+        print(n)
+
+    return f2
+
+
+if __name__ == '__main__':
+    result = f1()
+    result()
+
+# 输出：
+# 999
+```
+
+## 带参数的装饰器
+
+```
+def logging(func)是一个装饰器，如果装饰器需要参数，需要通过闭包来实现，即在其外面再定义一个外函数def mylog(type)，将参数type作为外函数的的变量传递到内函数里面。
+
+def mylog(type):
+    def logging(func):
+        def inner(*args, **kwargs):
+            if type == 'debug':
+                print('[DEBUG] logging')
+            else:
+                print('[INFO] logging')
+            rv = func(*args, **kwargs)
+            return rv
+        return inner
+    return logging
+
+
+@mylog(type='debug')
+def add(x, y):
+    return x + y
+
+
+if __name__ == '__main__':
+    result = add(1, 2)
+    print('result: %d' % result)
+    
+# 输出：
+# [DEBUG] logging
+# result: 3
+```
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

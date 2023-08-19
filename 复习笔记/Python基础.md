@@ -1747,7 +1747,7 @@ s.myfunc()
 
 ```
 1.子类不写构造函数,那么会默认调用从父类继承过来的构造函数
-2.如果重写了__init__ 时，要继承父类的构造方法，可以在子类构造函数中使用 super 关键字或父类名
+2.如果重写了__init__ 时，就要继承父类的构造方法，可以在子类构造函数中使用 super 关键字或父类名
 3.析构和构造一样
 
 class Father():
@@ -2383,15 +2383,220 @@ if __name__ == '__main__':
 # result: 3
 ```
 
+# Day13
+
+## 使用类作为装饰器 
+
+```
+import time
+
+
+class Timer:
+    def __init__(self, func) -> None:
+        self.func = func
+
+    def __call__(self, *args, **kwargs):
+        start = time.time()
+        rv = self.func(*args, **kwargs)
+        end = time.time()
+        print('time taken %f' % (end - start))
+        return rv
+
+
+@Timer
+# 等价于 add = Timer(add)
+def add(x, y):
+    return x + y
+
+
+if __name__ == '__main__':
+    result = add(2, 3)
+    print('result: %d' % result)
+
+# 输出：
+# time taken 0.000000
+# result: 5
+
+
+上述相当于把一个装饰器变成了一个 Timer 类的对象，然后 add 函数被传入进了 __init__中，保存为self.func，在后面调用 add(2,3) 的时候，实际上相当于调用了__call__这个函数，做了一个对象的调用，后面参数2和3就被传入到了__call__里面，然后依顺序运行了代码。
+```
+
+## 带参数的类装饰器
+
+```
+import time
+
+
+class Timer:
+    def __init__(self, prefix) -> None:
+        self.prefix = prefix
+
+    def __call__(self, func):
+        print('Timer.__call__')
+
+        def wrapper(*args, **kwargs):
+            start = time.time()
+            ret = func(*args, **kwargs)
+            print(f'{self.prefix}:{time.time() - start}')
+            return ret
+
+        return wrapper
+
+
+@Timer(prefix='curr_time:')
+# 等价于： add = Timer(prefix = 'curr_time:')(add)
+def add(x, y):
+    return x + y
+
+
+if __name__ == '__main__':
+    print(add(2, 3))
+
+# 输出：
+# Timer.__call__
+# curr_time::0.0
+# 5
+
+
+上述把一个装饰器初始化为 Timer 类的对象，然后 prefix 参数被传入进了 __init__中，之后调用__call__函数返回一个闭包。之后就相当于装饰器函数了，用wrapper装饰add函数。
+```
+
+## 通过装饰器实现单例模式
+
+```
+1.定义一个全局的字典变量,用于保存单例模式下实例化出的对象,键是类名,值是对象
+instances={}
+
+def myfunc(cls):
+    def mytest(*args,**kwargs):
+        if cls.__name__ not in instances.keys():
+            #如果这个类名不在字典的键里,那么生成对象
+            instances[cls.__name__]=cls(*args,**kwargs)
+        return instances[cls.__name__]
+    return mytest
+
+@myfunc    #Maker=myfunc(Maker)
+class Maker():
+    pass
+
+
+t=Maker()
+t2=Maker()
+print(id(t))
+print(id(t2))
+```
+
+## 通过__new__()魔术方法实现单例模式
+
+```
+class Maker():
+    __instance=None
+
+    def __new__(cls, *args, **kwargs):
+        if cls.__instance is None:
+            #如果__instance没有值,那么就使用object的来实例化对象
+            cls.__instance=super().__new__(cls)
+        return cls.__instance
+
+t=Maker()
+t2=Maker()
+print(id(t))
+print(id(t2))
+```
+
+## 类属性和实例属性
+
+```
+类属性： 在类名称下面定义的属性
+实例属性： 在__init__魔术方法中初始化的属性，或者通过实例对象添加的属性
+```
+
+## 实例方法和实例方法和静态方法
+
+```
+实例方法：第一个参数是self, 代表当前实例对象本身
+类方法: 第一个参数是cls,代表当前的类对象, 需要在方法的上面加上@clssmethod, 类方法可以通过实例对象和类对象来访问 
+静态方法：不需要额外的参数，通过@staticmethod来进行装饰，静态方法可以通过类对象和实例对象来进行访问   
+        #静态方法在类中是独立的,单纯的函数,只是托管在类的空间,增强代码的逻辑性,简化代码的维护
+```
+
+## 进程的概念
+
+```
+进程是什么：进程是操作系统进行资源分配的基本单位
+比如，我们在操作系统上运行一个应用程序，其实对操作系统来说你就开启了一个进程
+
+单核的CPU,同一时刻只能运维单个进程，虽然可以同时运行多个程序，但进程之间是通过轮流占用CPU来执行的
+```
+
+## 创建进程的类Process
+
+```
+Multiprocessing模块提供了一个创建进程的类 Process,所以你使用Process类之前要引入Multiprocessing模块
+创建进程有以下两种方法:
+1.创建一个Process类的实例，并指定目标任务函数
+2.自定义一个类，并继承Process类，重写__init__()方法和run()方法
+
+
+一.使用Process类的实例创建进程
+#引入模块
+from multiprocessing import Process
+#为了获取进程pid
+import os
+import time
+def mytest(d):
+    num=0
+    for i in range(d*1000000):
+        num+=i
+    print(f"进程的pid为{os.getpid()}")
+
+#在该代码块内写的代码只能在本文件有,不能被别的文件引用
+if __name__=="__main__":
+    print("父进程PID为%s "%os.getpid())
+    #创建子进程,target的值是子进程要执行的函数,args的值是函数的参数
+    p1=Process(target=mytest,args=(3,)) ###args必须是可迭代对象
+    t0=time.time()#记录当前时间
+    #激活子进程
+    p1.start()
+    p1.join()#阻塞主进程,让子进程完成任务或子进程被终止
+    t1 = time.time()  # 记录当前时间
+    print(t1-t0)
+    
+    
+二.使用类创建子进程
+#引入模块
+from multiprocessing import Process
+#为了获取进程pid
+import os
+import time
+
+class Maker(Process):
+    def __init__(self,d):
+        self.d=d
+        super().__init__()
+
+    #子进程要执行任务函数
+    def run(self):
+        num = 0
+        for i in range(self.d * 1000000):
+            num += i
+        print(f"进程的pid为{os.getpid()}")
 
 
 
+#在该代码块内写的代码只能在本文件有,不能被别的文件引用
+if __name__=="__main__":
+    print("父进程PID为%s "%os.getpid())
+    #创建子进程,使用类
+    p1=Maker(3)
+    t0=time.time()#记录当前时间
+    #激活子进程
+    p1.start()
+    p1.join()#阻塞主进程,让子进程完成任务或子进程被终止
+    t1 = time.time()  # 记录当前时间
+    print(t1-t0)
 
-
-
-
-
-
+```
 
 
 

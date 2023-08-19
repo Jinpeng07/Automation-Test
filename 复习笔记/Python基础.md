@@ -2598,6 +2598,560 @@ if __name__=="__main__":
 
 ```
 
+# Day14
+
+## 创建进程
+
+```
+Process类的构造函数参数说明:
+Target:表示调用对象,一般为函数,也可以是类
+Args:表示调用对象的位置参数元组
+Kwargs:表示调用对象的字典
+Name:为进程的别名
+Group:参数不使用,可忽略
+
+Process类常用方法:
+is_alive():返回进程是否是激活的
+join([timeout]):阻塞进程,直到进程执行完成或超时或进程被终止
+run():代表进程执行的任务函数,可被重写
+start():激活进程
+terminate():终止进程
+
+Process的属性:
+daemon:父进程终止后自动终止，且不能产生新进程，必须在start(之前设置 
+authkey:字节码，进程的准密钥。
+exitcode:退出码，进程在运行时为None，如果为-N，就表示被信号N结束。 
+name:获取进程名称。 
+pid:进程id
+
+Daemon属性：
+daemon = True:父进程终止后程序自动终止，且不能产生新进程，必须在start()之前设置 
+不设置daemon: 父进程不等待子进程,父进程代码直接运行到尾部,但程序还在等子进程结束
+
+```
+
+## 进程并发控制
+
+```
+Semaphore是控制同一时刻并发的进程数
+
+有时候如果很多进程都去访问共享资源，可能导致资源压力过大，比如100个进程都去访问数据库，那么数据库压力会很大，这个时候就可以使用控制进程，让一些进程去访问，一些进程后面再访问
+
+from multiprocessing import Process,Semaphore,current_process
+import time
+
+def mytest(se,i):
+    se.acquire()#获取许可,可以使用公共资源,其他进程不能使用
+    print(time.strftime("%H:%M:%S"),current_process().name+"开始运行")
+    time.sleep(i)
+    print(time.strftime("%H:%M:%S"),current_process().name+"结束运行")
+    se.release()#放弃许可,其他进程可以使用
+
+if __name__=="__main__":
+    #创建控制进程的对象
+    se=Semaphore(2)
+    #循环创建子进程
+    for i in range(6):
+        p=Process(target=mytest,args=(se,2))
+        p.start()
+```
+
+## 进程同步-Lock
+
+```
+如果有多个进程同时运行，都去访问资源，那么可能导致混乱
+
+这时需要使用锁(Lock)来控制同一时刻仅有一个进程在访问资源
+
+from multiprocessing import Process,Lock
+import time
+
+def task1(lock):
+    #加锁
+    lock.acquire()
+    n=5
+    while n>1:
+        print(time.strftime("%H:%M:%S")+" task1 输出信息")
+        time.sleep(1)
+        n-=1
+    #解锁
+    lock.release()
+
+def task2(lock):
+    with lock:
+        n=5
+        while n>1:
+            print(time.strftime("%H:%M:%S")+" task2 输出信息")
+            time.sleep(1)
+            n-=1
+
+def task3(lock):
+    with lock:
+        n=5
+        while n>1:
+            print(time.strftime("%H:%M:%S")+" task3 输出信息")
+            time.sleep(1)
+            n-=1
+
+
+if __name__=="__main__":
+    #创建Lock对象
+    lock=Lock()
+    p1=Process(target=task1,args=(lock,))
+    p2=Process(target=task2,args=(lock,))
+    p3=Process(target=task3,args=(lock,))
+
+    p1.start()
+    p2.start()
+    p3.start()
+```
+
+## 进程之间通信-Event
+
+```
+需要使用Event来挂起进程或唤醒进程
+
+event.isSet()： 返回event的状态值；
+event.wait()：  如果event.isSet()==False将阻塞线程，event建立后默认为False；
+event.set()：   设置event的状态值为True，所有阻塞池的线程激活进入就绪状态， 等待操作系统调度；
+event.clear()： 恢复event的状态值为False。
+
+Set能唤醒进程，并让flag为True.
+Clear能让flag为false
+Wait在flag为false的时候可以挂起进程，flag默认是false
+
+import time
+import multiprocessing
+
+
+def light(event):
+    print('此时是红灯')
+    time.sleep(3)
+    print('绿灯了')
+    event.set()
+    print(event.is_set())
+
+
+def car(event, name):
+    print(f'car{name}在等红灯')
+    event.clear()
+    event.wait()
+    print(f'car{name}可以走了')
+
+
+if __name__ == '__main__':
+    event = multiprocessing.Event()
+    l = multiprocessing.Process(target=light,args=(event,))
+    l.start()
+    car1 = multiprocessing.Process(target=car, args=(event,1,))
+    car2 = multiprocessing.Process(target=car, args=(event,2,))
+    car1.start()
+    car2.start()
+```
+
+## 进程优先级队列-Queue
+
+```
+Queue 是多进程安全的队列，可以使用 Queue实现多进程之间的数据传递。
+put 方法用以插入数据到队列中，put 方法还有两个可选参数:blocked 和 timeout。如果blocked为True(默认值)，并且 timeout 为正值，则该方法会阻塞timeout 指定的时间，直到该队列有剩余的空间。如果超时，则会抛出 Queue.Full 异常。如果blocked 为 False，但该 Queue 已满，则会立即抛出 Queue.Full 异常。
+
+get 方法可以从队列读取并删除一个元素。同样，get方法有两个可选参数:blocked 和 timeout。如果 blocked 为 True 默认值)，并且 timeout 为正值，在等待时间内没有取到任何元素，则会抛出 Queue.Empty 天异常。如果 blocked 为False，那么将会有两种情况存在: Queue 有一个值可用，立即返回该值，否则队列为空，立即抛出 Queue.Empty异常。
+
+from multiprocessing import Process,Queue
+import time
+
+#生产者
+def mytest(q):
+    n=1
+    while True:
+        q.put(f'冷饮{n}')
+        print(f"{time.strftime('%H:%M:%S')}A进程 放入冷饮{n}")
+        n+=1
+        time.sleep(1)
+
+
+#消费者
+def mytest2(q):
+    while True:
+        print(f"{time.strftime('%H:%M:%S')}B进程 取出冷饮{q.get()}")
+        time.sleep(5)
+
+if __name__=='__main__':
+    #定义队列,容量为5
+    q=Queue(maxsize=5)
+    p1=Process(target=mytest,args=(q,))
+    p2=Process(target=mytest2,args=(q,))
+    p1.start()
+    p2.start()
+    p1.join()
+    p2.join()
+```
+
+## 进程池Pool
+
+```
+在使用 Python 进行系统管理的时候，特别是是同时操作多个文件目录，或者远程控制多台主机并行操作，可以节约大量的时间。当被操作对象数目不大时，可以直接利用 multiprocessing中的Process 动态生成多个进程，十几个还好，但但如果是上百个，上千个目标，手动限制进程数量又太过烦琐，此时就可以发挥进程池的功效 了。 
+Pool 可以提供指定数量的进程供用户调用，当有新的请求提交到 pool 中时，如果池还没 有满，就会创建一个新的进程用于执行该请求; 如果池中的进程数量已经达到规定的最大值，该请求就会等待，直到池中有进程结束才会创建新的进程。
+
+
+import multiprocessing
+import time
+
+def mytest(name):
+    print(f"{time.strftime('%H:%M:%S')}:{name} 开始执行 ")
+    time.sleep(3)
+
+if __name__=='__main__':
+    #创建进程池,并设定有多少个进程
+    pool=multiprocessing.Pool(processes=3)
+    for i in range(10):
+        pool.apply_async(func=mytest,args=(i,))
+
+    #关闭进程池
+    pool.close()
+
+    pool.join()
+```
+
+## 数据交换Pipe
+
+```
+multiprocessing.Pipe()方法返回一个管道的两个端口，如 Command1的STDOUT 和 Command2 的 STDIN，这样 Command1 的输出就作为 Command2的输入。如果反过来，让 Command2 的输出也可以作为 Command1的输入，这就是全双工管道，默认全双工管道。如果想设置半双工管道,只需要给Pipe()方法传递参数 duplex=False 就可以,即 Pipe(duplex=False)。
+Pipe()方法返回的对象具有发送消息 send()方法和接收消息 recv()方法，可以调用 Command1.send(msg)发送消息，调用 Command2.recv()接收消息。如果没有消息可接收，recv()方法会一直阻塞。如果管道已经被关闭，recv()方法就会抛出异常 EOFError。
+
+以后再看
+```
+
+# Day15
+
+## 多线程的概念
+
+```
+线程也叫轻量级进程，是操作系统能够进行运算调度的最小单位，它被包含在进程中，是进程中的实际运作单位。
+线程自身不拥有系统资源，只拥有一些在运行中必不可少的资源，但它可与同属一个进程的其他线程共享进程所拥有的全部资源
+一个线程可以创建和撤销另一个线程，同一进程中的多个线程之间可以并发执行
+
+线程有就绪，阻塞，运行三种基本状态
+就绪：是指线程具备运行的所有条件，逻辑上可以运行，等待处理机
+阻塞：是指线程在等待一个事件（如某个信号量），逻辑上不能运行
+运行：是指线程占有处理机，正在运行
+
+#执行密集型计算任务时,多进程更快
+#总结:针对IO型任务,使用多线程更快
+```
+
+## 创建线程
+
+```
+创建线程有2种方式，一种是实例化threading.Thread类，一种是继承threading.Thread，在子类中重写run和init方法
+
+第一种方式:
+import time
+import threading
+def mytest(n):
+    print(f"线程名称为:{threading.current_thread().name} 开始执行")
+    time.sleep(3)
+    print(f"线程名称为:{threading.current_thread().name} 结束执行")
+
+if __name__=='__main__':
+    t=threading.Thread(target=mytest,args=(1,))
+    t2=threading.Thread(target=mytest,args=(2,))
+    t3=threading.Thread(target=mytest,args=(3,))
+
+    t.start()
+    t2.start()
+    t3.start()
+
+    t.join()
+    t2.join()
+    t3.join()
+    
+第二种方式：
+import time
+import threading
+
+class Maker(threading.Thread):
+    def __init__(self,n):
+        super().__init__()
+        self.n=n
+
+    def run(self):
+        print(f"线程名称为:{threading.current_thread().name} 开始执行")
+        time.sleep(3)
+        print(f"线程名称为:{threading.current_thread().name} 结束执行")
+
+
+if __name__=='__main__':
+    t1 = Maker(1)
+    t2 = Maker(2)
+    t3 = Maker(3)
+
+    t1.start()
+    t2.start()
+    t3.start()
+
+    t1.join()
+    t2.join()
+    t3.join()
+```
+
+## 多线程同步-Lock
+
+```
+如果多个线程共同对某个数据修改，则可能出现不可预料的结果，这个时候就需要使用互斥锁
+
+import threading
+
+num=0
+#定义锁
+lock=threading.Lock()
+def mytest(n):
+    global num
+    #加锁
+    lock.acquire()
+    for i in range(100000):
+        num=num+n
+        num=num-n
+    #解锁
+    lock.release()
+
+if __name__=='__main__':
+    t1=threading.Thread(target=mytest,args=(6,))
+    t2=threading.Thread(target=mytest,args=(17,))
+    t3=threading.Thread(target=mytest,args=(11,))
+
+    t1.start()
+    t2.start()
+    t3.start()
+
+    t1.join()
+    t2.join()
+    t3.join()
+    #如果不加锁,每次运行后,全局变量的值都不同
+    print("num=",num)
+
+#Lock叫原始锁，Rlock叫重入锁
+lock原始锁的特点:
+	1.不能在一个线程中连续加2次锁,会阻塞住
+	2.一个线程给其他线程解锁
+重入锁的特点
+	1.一个线程可以多次加锁
+	2.一个线程中的锁,只能本线程解锁
+```
+
+## 多线程同步-信号量（控制线程并发量）
+
+```
+互斥锁只能允许一个线程访问共享数据，信号量可以同时允许一定数量的线程访问共享数据
+
+import threading
+import time
+#创建信号量对象,用于控制线程的并发数
+sem=threading.BoundedSemaphore(5)
+
+def mytest(n):
+    sem.acquire()
+    time.sleep(3)
+    print(f"{time.strftime('%H:%M:%S')}:{n} 在办理业务")
+    sem.release()
+
+mylist=[]
+for i in range(12):
+    t=threading.Thread(target=mytest,args=(i,))
+    t.start()
+    mylist.append(t)
+
+for i in mylist:
+    i.join()
+```
+
+## 多线程同步-条件对象-Condition
+
+```
+条件对象condition能让一个线程A停下来，等待其他线程B，线程B满足了某个条件后通知线程A继续运行。
+
+具体步骤：
+线程首先获取一个条件变量锁，如果条件不足，则该线程等待（wait）并释放条件变量锁；如果条件满足，就继续执行线程，执行完成后可以通知(notify)其他状态为wait的线程执行。其他处于wait状态的线程接到通知后会重新判断条件以确定是否继续执行
+
+acquire: 请求锁
+release：释放锁
+wait: 线程挂起，等待被唤醒（notify或notifyAll），可以设置等待超时时间
+notify：唤醒等待线程，里面可以指定唤醒几个等待线程，比如设置n=3，则表示随机唤醒等待的三个线程。
+notify_all: 唤醒所有的等待线程。
+
+import threading
+class Boy(threading.Thread):
+    def __init__(self,cd,name):
+        super().__init__()
+        self.cd=cd
+        self.name=name
+
+    def run(self):
+        #加锁,为后面的wait准备
+        self.cd.acquire()
+        print(self.name+":嫁给我吧!")
+        #唤醒翠花
+        self.cd.notify()
+        #自己暂停,等待翠花回应
+        self.cd.wait()
+        print(self.name+"我单膝下跪,向最漂亮的翠花求婚,并送上砖戒")
+        # 唤醒翠花
+        self.cd.notify()
+        self.cd.wait()
+        print(self.name+"你的选择非常明智")
+        self.cd.release()#释放锁
+
+class Girl(threading.Thread):
+    def __init__(self,cd,name):
+        super().__init__()
+        self.cd = cd
+        self.name = name
+
+    def run(self):
+        #加锁
+        self.cd.acquire()
+        self.cd.wait()#等待二牛求婚
+        print(self.name+"没有情调,太直男,不够浪漫,不答应")
+        self.cd.notify()#唤醒二牛
+        self.cd.wait()#等待二牛做浪漫的事情
+        print(self.name+"好吧,答应你")
+        self.cd.notify()  # 唤醒二牛
+        self.cd.release()#释放锁
+
+#创建条件对象
+cd=threading.Condition()
+boy=Boy(cd,"二牛")
+girl=Girl(cd,"翠花")
+
+#开启线程
+girl.start()
+boy.start()
+
+```
+
+## 多线程同步-事件-event
+
+```
+需要使用Event来挂起进程或唤醒进程
+
+event.isSet()： 返回event的状态值；
+event.wait()：  如果event.isSet()==False将阻塞线程，event建立后默认为False；
+event.set()：   设置event的状态值为True，所有阻塞池的线程激活进入就绪状态， 等待操作系统调度；
+event.clear()： 恢复event的状态值为False。
+
+Set能唤醒进程，并让flag为True.
+Clear能让flag为false
+Wait在flag为false的时候可以挂起进程，flag默认是false
+
+from threading import Thread,Event
+import time
+
+event=Event()
+
+def light():
+    print('红灯正亮着')
+    time.sleep(3)
+    event.set() #绿灯亮
+
+def car(name):
+    print('车%s正在等绿灯' %name)
+    event.wait() #等灯绿 此时event为False,直到event.set()将其值设置为True,才会继续运行.
+    print('车%s通行' %name)
+
+if __name__ == '__main__':
+    # 红绿灯
+    light=Thread(target=light)
+    light.start()
+
+    # car1
+    car1=Thread(target=car,args=(1,))
+    car1.start()
+    # car2
+    car2=Thread(target=car,args=(2,))
+    car2.start()
+```
+
+## 多线程优先级队列-queue
+
+```
+先进先出（queue）
+后进先出（LifoQueue）
+优先队列(PriorityQueue)
+put 方法用以插入数据到队列中，put 方法还有两个可选参数:blocked 和 timeout。如果blocked为True(默认值)，并且 timeout 为正值，则该方法会阻塞timeout 指定的时间，直到该队列有剩余的空间。如果超时，则会抛出 Queue.Full 异常。如果blocked 为 False，但该 Queue 已满，则会立即抛出 Queue.Full 异常。
+
+get 方法可以从队列读取并删除一个元素。同样，get方法有两个可选参数:blocked 和 timeout。如果 blocked 为 True 默认值)，并且 timeout 为正值，在等待时间内没有取到任何元素，则会抛出 Queue.Empty 天异常。如果 blocked 为False，那么将会有两种情况存在: Queue 有一个值可用，立即返回该值，否则队列为空，立即抛出 Queue.Empty异常。
+
+import threading
+import time
+import queue
+
+#创建队列队象
+q=queue.Queue(maxsize=500)
+
+def mytest():
+    for i in range(500):
+        q.put("书本-"+str(i))
+
+    while True:
+        q.put("书本")
+        time.sleep(1)
+
+def mytest02():
+    while True:
+        msg=q.get()
+        print(msg)
+        time.sleep(1)
+
+
+t1=threading.Thread(target=mytest)
+t2=threading.Thread(target=mytest02)
+
+t1.start()
+t2.start()
+t1.join()
+t2.join()
+```
+
+## 线程池-pool
+
+```
+在面向对象编程中，创建和销毁对象是很费时间的的，因为创建一个对象要获取内存资源或其他更多资源。虚拟机也将试图跟踪每一个对象，以便更能够在对象销毁后进行垃圾回收。同样的道理，多任务情况下每次都会生成一个新线程，执行任务后资源再被回收就显得非常低效，因此线程池就是解决这个问题的办法。类似的例子还有连接池、进程池等。
+将任务添加到线程池中，线程池会自动指定一个空空闲的线程去执行任务，当超过线程池的最大线程数时，任务需要等待有新的空闲线程后才会被执行。
+
+from multiprocessing.dummy import Pool as ThreadPool
+
+import time
+
+def mytest(n):
+    print("n=",n)
+    time.sleep(2)
+
+#主线程,调用5次mytest
+start=time.time()
+for i in range(5):
+    mytest(i)
+end=time.time()
+print("顺序执行的时间为:",end-start)#10.002500057220459
+
+start2=time.time()
+p=ThreadPool(processes=5)
+res=p.map(mytest,range(5))
+p.close()
+p.join()
+end2=time.time()
+print("线程池的时间为:",end2-start2)#2.109921932220459
+```
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -3764,11 +3764,113 @@ token
 3. https需要证书,http不需要
 ```
 
-## Day19
+# Day19
+
+## Selenium环境配置
 
 ```
+略
+```
+
+## 页面元素定位介绍(重点)
 
 ```
+selenium可以识别的元素,要求属性必须唯一
+1）id  用id的值
+2）xpath 路径
+3）css selector 标签名+class属性的值
+4）link text 使用链接文字
+5）patial link text  使用子元素的链接文字 
+6）name 用name属性的值
+7）class name 用class属性的值
+8）tag name 用标签名
+查找顺序是从html开始
+e=dr.find_element(By.ID,'kw')-- 3.7以上版本的
+e=dr.find_elements(By.ID,'kw')-- 3.7以上版本的
+from selenium.webdriver.common.by import By
+By.ID
+By.NAME
+By.LINK_TEXT
+By.PARTIAL_LINK_TEXT
+By.TAG_NAME
+By.CLASS_NAME
+By.CSS_SELECTOR
+By.XPATH
+```
+
+# Day20
+
+## 页面操作
+
+```
+1.鼠标键盘
+clear()： 清除文本。
+send_keys (value)： 模拟按键输入。
+click()： 单击元素。例如按钮操作。
+
+2.获取元素标签的属性值
+get_attribute(属性名)： 获得属性值，可以获取自定义的属性。
+get_property(属性名):获得属性值。自定义属性不能获取
+
+3.获取元素的属性信息
+• text• 获取元素标签对之间间的文本值
+• size• 获取元素的尺寸大小
+• id  Selenium内部的一个元素属性，用于判断两个元素是否是相同的元素。
+• screenshot()方法。
+• 给元素一个快照，并保存为PNG格式的图片。
+
+4.获取元素的基本状态信息
+• is_enabled()方法  用于判断元素的可用性
+• is_selected()方法 用于判断复选框等元素是否处于选择状态
+• is_displayed()   检查该元素是否用户可见
+
+5.其他操作
+submit()：用于提交表单。 例如， 在搜索框输入关键字之后的“回车” 操作， 就可以通过该方法模拟。
+title：用于获得当前页面的标题。
+current_url：用户获得当前页面的URL
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

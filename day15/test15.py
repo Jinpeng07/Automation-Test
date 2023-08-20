@@ -1,28 +1,52 @@
 import threading
 import time
-import queue
 
-#创建队列队象
-q=queue.Queue(maxsize=500)
+class Job(threading.Thread):
 
-def mytest():
-    for i in range(500):
-        q.put("书本-"+str(i))
-        print("put书本-"+str(i))
-        time.sleep(5)
+    def __init__(self, *args, **kwargs):
+        super(Job, self).__init__(*args, **kwargs)
+        self.__flag = threading.Event()     # 用于暂停线程的标识
+        self.__flag.set()       # 设置为True
+        self.__running = threading.Event()      # 用于停止线程的标识
+        self.__running.set()      # 将running设置为True
+        self.__result = False
 
+    def get_result(self):
+        """ 获取请求结果 """
+        if self.__result:
+            return self.__result
 
-def mytest02():
-    while True:
-        msg=q.get(block=True, timeout=3)
-        print('get' + msg)
-        time.sleep(1)
+    def run(self):
+        while self.__running.is_set():
+            self.__flag.wait()      # 为True时立即返回, 为False时阻塞直到内部的标识位为True后返回
+            print (time.time())
+            time.sleep(1)
+            self.__result = True
 
+    def pause(self):
+        self.__flag.clear()     # 设置为False, 让线程阻塞
 
-t1=threading.Thread(target=mytest)
-t2=threading.Thread(target=mytest02)
+    def resume(self):
+        self.__flag.set()    # 设置为True, 让线程停止阻塞
 
-t1.start()
-t2.start()
-t1.join()
-t2.join()
+    def stop(self):
+        self.__flag.set()       # 将线程从暂停状态恢复, 如何已经暂停的话
+        self.__running.clear()        # 设置为False
+
+if __name__ == '__main__':
+    a = Job()
+    a.start()
+    time.sleep(3)
+    print('\n==========')
+    a.pause()
+    time.sleep(3)
+    print('\n==========')
+    a.resume()
+    time.sleep(3)
+    print('\n==========')
+    a.pause()
+    time.sleep(2)
+    print('\n==========')
+    print(a.get_result())
+    a.stop()
+    print(a.get_result())

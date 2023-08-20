@@ -3142,13 +3142,633 @@ end2=time.time()
 print("线程池的时间为:",end2-start2)#2.109921932220459
 ```
 
+# Day16
+
+## 协程介绍
+
+```
+协程，又称微线程。协程是python个中另外一种实现多任务的方式，只不过比线程更小占用更小执行单元
+```
+
+## 协程 - yield
+
+```
+略
+```
+
+## 协程 - greenlet
+
+```
+协程，又称微线程。协程是python个中另外一种实现多任务的方式，只不过比线程更小占用更小执行单元
+```
+
+## 协程 - gevent
+
+```
+greenlet 已经实现了协程，但是这个还的人工切换，太麻烦了。python还有一个比greenlet更强大的并且能够自动切换任务的模块**gevent**
+
+其原理是当一个 greenlet 遇到IO(指的是input output 输入输出，比如网络、[文件操作](https://so.csdn.net/so/search?q=%E6%96%87%E4%BB%B6%E6%93%8D%E4%BD%9C&spm=1001.2101.3001.7020)等)操作时，比如访问网络，就自动切换到其他的greenlet，等到IO操作完成，再在适当的时候切换回来继续执行。
+
+由于IO操作非常耗时，经常使程序处于等待状态，有了gevent为我们自动切换协程，就保证总有greenlet在运行，而不是等待IO
+```
+
+## 进程，线程，协程对比
+
+```
+略
+```
+
+## 计算机网络的历史
+
+## osi/rm的简介
+
+```
+ＯＳＩ／ＲＭ模型结构:物理层,数据链路层,网络层,传输层,会话层,表示层,应用层共7层
+```
+
+## 物理层,数据链路层,网络层(重点)
+
+```
+1.物理层:只负责传输0 1 二进制比特流
+2.数据链路层:负责将数据封装成帧
+帧是较小的数据,是数据表现的一种形式
+3.网络层：负责路由寻址和广播
+```
+
+## 传输层,会话层,表示层,应用层(重点)
+
+```
+4.传输层：负责建立一个可靠端(发送端)到端(接收端)的连接,包括数据核对和整理
+也负责端对端建立,维护,撤销
+
+5.会话层：负责维护或拆除会话,为端系统的应用程序之间提供对话控制机制
+
+6.表示层：完成对数据的转换
+对数据格式的转化工作:
+1.格式化（数据格式的标准化）
+2.发送端数据：加密的形式，接收端：解密的操作
+3.发送端数据：压缩的形式，接收端：解压缩的操作
+
+7.应用层：所有的应用程序的网络在此展开,确定进程之间的通信性质,以满足用户的需求
+```
+
+## 计算机网络体系结构通信原理
+
+```
+一, 数据通信原理
+	发送端自上而下传输（直到物理层），接收端自下而上传输（直到发送端发起通信的层次）
+二, 对等会话原理
+	发送端和接收端只有在对等层才可进行通信，不同层次传输的数据格式不一样：
+	应用层、表示层和会话层以报文方式传输 -->报文:一次性要发送的数据块
+	传输层以报文或者报文分段方式传输 -->报文分段:传输过程中会不断的封装成分组、包、帧来传输；报文:一次性要发送的数据块
+	网络层以分组方式传输  -->分组:大多数计算机网络都不能连续的任意传输数据,所以是把网络系统上的数据分割成小块,逐块发送,这种小块就称为分组
+	数据链路层以帧方式传输  ->帧--->数据比较小
+物理层以比特流方式传输  ->比特流(二进制)
+	发送端每经过一层（物理层除外）都要在原数据上进行协议封装，即最前面加装一个本层所使用协议的协议头；接收端每经过一层都要对原数据进行协议解封装，即去掉原数据最前面的上层协议头
+```
+
+## TCP/IP概述
+
+```
+TCP/IP（Transmission Control Protocol/Internet Protocol，传输控制协议/网际协议）是指能够在多个不同网络间实现信息传输的协议簇。TCP/IP协议不仅仅指的是TCP 和IP两个协议，而是指一个由FTP、SMTP、TCP、UDP、IP等协议构成的协议簇， 只是因为在TCP/IP协议中TCP协议和IP协议最具代表性，所以被称为TCP/IP协议。
+
+SMTP协议又叫:简单邮件传输协议，在应用层
+
+2.具有通信协议四个层次,分别为:网络接口层,网络互联层,传输层,应用层
+```
+
+## TCP/IP网络接口层(重点)
+
+```
+1.功能:在物理连接(网线和电脑之间)之上，实现逻辑链路(用到的协议)的连接（拨号连接）
+2.网卡:有物理地址,即MAC地址 ->是计算机的身份证
+3.SLIP协议:拨号连接使用的协议,缺点: 没有差错校验机制
+4.数据报:网络传输的数据的基本单元，它携带了要从计算机传递到目的的计算机的信息
+5.数据包:是TCP/IP协议通信传输中的数据单位，单个信息被划分为多个数据块，这些数据块被称为包。
+6.路由:路由器从一个接口上接收到数据包，根据数据包的目的地址进行定向并转发到另一个接口的过程
+7.ppp协议:用于拨号连接的协议,解决SLIP存在的问题,也叫点对点协议,现在一般用它
+8.ARP协议:地址解析协议,作用是根据目标设备的IP地址，查询到目标设备的MAC地址，保证通信的进行
+9.RARP协议:反向(逆向)地址解析协议,作用是根据目标设备的MAC地址，查询到目标设备的IP地址
+```
+
+## TCP/IP网络互联层(重点)
+
+```
+功能
+在不同网络之间进行路由寻址、传递数据报
+IP( Internet Protocol)协议
+无连接、不可靠的协议
+
+ICMP协议:因特网控制消息协议
+是ip协议的一部分
+作用是报告错误,典型应用:ping命令的执行就是icmp协议工作的过程
+```
+
+## TCP/IP传输层(重点)
+
+```
+作用:建立应用间端(发送端)到端(接收端)的连接
+	面向连接：会话建立，数据传输，会话拆除(建立维护拆除)  可靠
+	无连接：不保证数据的有序到达，不可靠
+Tcp协议:也叫传输控制协议 (浏览器)
+	面向连接
+	可靠（三次握手,四次挥手）
+	速度慢
+UDP协议:用户数据报协议 (QQ,WX)
+	无连接
+	不可靠
+	速度快
+
+端口号：
+我们用户在识别或者认识一个软件，是根据软件的名字识别，
+而计算机系统或者网络，是通过端口号来识别软件
+```
+
+## TCP/IP应用层(重点)
+
+```
+主要负责用户和应用程序之间的通信。协调设备和软件的多样性问题；解决系统中文件传输问题。以下是常见的应用协议：
+FTP：文件传输协议 (专门文件传输的协议)
+HTTP：超文本传输协议 (网页)
+DNS：域名系统
+Telnet：远程终端协议 (远程操作需要的协议)
+IMAP：Internet邮件访问协议  (针对邮箱,会删除邮件)
+POP3：邮局协议版本3 (针对邮箱,不会删除邮件)
+SMTP协议又叫:简单邮件传输协议
+```
+
+## TCP 传输控制协议
+
+```
+TCP是面向连接的，可靠的，基于流的传输层协议。
+```
+
+## 面试题:TCP连接的三次握手
+
+```
+客户端随机生成序列号，发送SYN给服务器端；
+服务器端随机生成序列号，将客户端的序列号加1作为确认号， 发送SYN/ACK给客户端；
+客户端将服务器端的序列号加1作为确认号，发送ACK给服务器端。
+```
+
+## 面试题:TCP建立连接为什么要三次握手，两次可不可以？
+
+```
+TCP是可靠的传输层协议，其可靠性是通过数据报文中的序列号来保障的。所以在建立TCP连接的过程当中主要就是为了同步序列号，而数据传输是双向的，对于双向传输的序列号都需要一个确认同步的过程，至少得经过三次数据的交互，所以需要三次握手，两次不可以 
+```
+
+## 面试题:TCP断开连接的过程（4次挥手）
+
+```
+断开TCP连接可以是由客户端发起，也可以是由服务器端发起   
+假设断开连接是由客户端发起的：  
+1.客户端向服务端发送FIN
+2.服务端向客户端发送ACK  到这,客户端明确不能接收和发送数据给服务端
+3.服务端向客户端发送FIN
+4.客户端向服务端发送ACK 到这,服务端明确不能接收和发送数据给客户端
+```
+
+## 面试题:TCP断开连接的过程为什么要4次    
+
+```
+TCP协议是双工的，断开连接的时候发送的FIN只是表示单向的数据已经传输完毕了，不需要再发送数据，但是可以接收对方发过来的数据。所以要将双向通信完全关闭，需要分别发送一次FIN和返回一次ACK
+```
+
+## UDP 用户报文协议 
+
+```
+UDP是无连接的，不可靠的，基于用户报文的传输层协议
+```
+
+## TCP和UDP的区别 (重点) 
+
+```
+TCP是面向连接的，可靠的，基于流的传输层协议    
+UDP是无连接的，不可靠的，基于用户报文的传输层协议    
+因为TCP需要建立连接和断开连接，所以TCP的速度比UDP慢    
+因为TCP需要维护系列号和确认号等控制信息，所以TCP的报文长度比UDP大 
+```
+
+# Day17
+
+## socket(套接字) 
+
+```
+它提供了标准的Sockets API    
+目的是能够实现TCP和UDP的通信
+```
+
+## TCP实现服务器端
+
+```
+1.创建套接字对象
+socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+socket.AF_INET:服务器之间通信使用ipv4
+socket.SOCK_STREAM:流失socket TCP
+2.绑定本地地址，地址是用元组表示，一般里面包含ip和port
+socket.bind(("127.0.0.1",9000))
+3.开始监听
+socket.listen()
+4.接受请求
+socket.accept()
+5.接收信息或发送信息
+socket.recv()#接收
+socket.sendall()#发送
+6.信息传输完毕，要关闭连接
+socket.close()
 
 
+import socket
+#1.创建套接字对象
+sk=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+#2.绑定本地地址
+sk.bind(("127.0.0.1",9000))
+#3.开始监听
+sk.listen()
+#4.不断的接收客户端的请求
+while True:
+    #接受请求,返回一个socket对象和一个客户端地址
+    obj,clientAddress=sk.accept()
+    print("%s:%d客户端连接成功"%clientAddress)
+    while True:
+        #使用accept返回的套接字对象来接收和发送数据
+        msg=obj.recv(1024)
+        print(msg.decode("utf8"))
+        #判断客户端是否要退出
+        if msg.decode("utf8")=="exit":
+            obj.sendall("serverexitok".encode('utf8'))
+            obj.close()
+            break
+
+        inmsg=input(">>:").strip()
+        # 判断用户有没有输入信息
+        if len(inmsg) == 0:
+            continue
+        #发送数据给客户端
+        obj.sendall(inmsg.encode('utf8'))
+```
+
+## TCP实现客户端
+
+```
+1.创建套接字对象
+socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+socket.AF_INET:服务器之间通信使用ipv4
+socket.SOCK_STREAM:流失socket TCP
+
+2.连接服务器
+socket.connect((ip,port))
+
+3.接收数据或发送数据
+socket.recv()
+socket.send()
+
+4.关闭连接
+socket.close()
 
 
+import socket
 
+#1.创建套接字对象
+sk=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+#2.连接服务器
+sk.connect(("127.0.0.1",9000))
+#3.发送数据给服务端
+while True:
+    msg=input("请输入信息>>:").strip()
+    #判断用户有没有输入信息
+    if len(msg)==0:
+        continue
 
+    sk.sendall(msg.encode('utf8'))
 
+    #接收服务端发送的信息
+    ret=sk.recv(1024)
+    print(ret.decode("utf8"))
+    if ret.decode("utf8")=="serverexitok":
+        break
+
+sk.close()
+```
+
+## UDP实现服务端
+
+```
+1.创建套件字
+socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
+socket.AF_INET:服务器之间通信使用ipv4
+socket.SOCK_DGRAM:流失socket UDP
+
+2.绑定本地地址
+socket.bind(ip和port)
+
+3.收数据和发数据
+socket.recvfrom()
+socket.sendto(信息，对方的地址)
+
+4.关闭套接字
+socket.close()
+```
+
+## UDP实现客户端 
+
+```
+1.创建套接字
+socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
+socket.AF_INET:服务器之间通信使用ipv4
+socket.SOCK_DGRAM:流失socket UDP
+
+2.收数据和发数据
+socket.recvfrom()
+socket.sendto(信息，对方的地址)
+
+3.关闭套接字
+socket.close()
+```
+
+## 总结
+
+```
+我们可以使用socket套接字去实现TCP和UDP连接
+
+TCP实现:
+1.服务器和客户端都需要创建套接字，并写明使用的协议（IPV4）和传输方式（TCP）
+2.服务器需要绑定本地地址和监听，客户端不需要，但客户端需要连接服务端
+3.服务端需要接受连接请求
+4.服务器和客户端都可以进行接收和发送数据
+5.最后双方都需要关闭套接字
+
+UDP实现:
+1.服务器和客户端都需要创建套接字，并写明使用的协议（IPV4）和传输方式（TCP）
+2.服务器需要绑定本地地址
+3.发送数据都需要信息和对方的地址
+4.接收数据都会接收到对方的地址
+5.最后双方都需要关闭套接字
+```
+
+# Day18
+
+## WWW:万维网
+
+```
+三项基本技术：  
+
+1. HTML:  HyperText Markup Language 超文本标记语言-如何去构建超文本      
+2. URL: Uniform Resource Locator 统一资源定位符-资源存放的位置   
+3. HTTP： HyperText Transfer Protoco 超文本传输协议-如何在网络当中去传输超文本        
+
+超文本：
+
+1. 超出普通文本文档范畴的文档（包含：图片，音频，视频，动画....）
+2. 包含超链接的文本文档      
+```
+
+## HTTP协议
+
+```
+HTTP协议用于客户端和服务器端进行通信    
+通过请求和响应的交换来达成信息     
+请求必须由客户端发起    
+响应是由服务器端返回      
+HTTP的数据传输是基于传输层的TCP协议 
+```
+
+## HTTP请求
+
+```
+HTTP报文是面向文本的，报文中的每一个字段都是一些ASCII码串，每个字段的长度是不确定的。HTTP报文传过来的都是一堆的0x ASCII码，例如" 41 63 63 65 70 74"这段十六进制ASCII码串对应的是“accept” 单词。
+
+这些十六进制的数字经过浏览器或者专用工具比如wireshark或fiddler的翻译，可以得到HTTP的报文结构。
+
+HTTP有两种报文：请求报文和响应报文。
+```
+
+## 报文格式  
+
+```
+格式： 
+
+1. 请求行 
+
+   POST http://101.91.150.147:8008/login/ HTTP/1.1
+   请求方法：  POST      要做什么操作    
+   URI:  http://101.91.150.147:8008/login/   要请求的资源的位置  
+   HTTP协议版本:  HTTP/1.1    
+
+2. 请求头域  headers     
+
+   Host: 101.91.150.147:8008#接受请求的服务器地址
+   Connection: keep-alive#短连接
+   Content-Length: 39#数据长度
+   Accept: application/json, text/plain, */* #指定客户端接收的数据类型
+   language: zh-hans#支持IE11
+   User-Agent: {Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) 		  Chrome/110.0.0.0 Safari/537.36 }#客户端的相关信息
+   Content-Type: application/json#请求的内容类型
+   Origin: http://101.91.150.147:8008 #请求来自哪个站点,只有服务器的名字
+   Referer: http://101.91.150.147:8008/ #请求来自哪个页面,包含服务器名字和路径
+   Accept-Encoding: gzip, deflate#可接受的内容编码
+   Accept-Language: zh-CN,zh;q=0.9#客户端可以接受的语言
+   Cookie: lang=zh-cn; device=desktop; theme=default; tab=my#Cookie
+
+3. 空行 
+
+4. 内容实体  
+
+   {"name":"test0107","password":"123456"}
+```
+
+## HTTP请求的常用方法  
+
+```
+GET    
+请求URI所对应的资源      
+
+POST   
+传输内容实体      
+
+PUT   
+通过内容实体部分传输文件内容，将文件上传到指定的位置      
+
+DELETE   
+和PUT相反，删除指定位置的文件         
+
+PATCH   
+默认是以x-www-form-urlencoded的contentType来发送信息，并且信息内容是放在request的body里。  
+
+HEAD  
+HEAD方法和GET方法一致，不返回报文的内容实体     
+用于确定URI资源的有效性以及资源更新的日期时间  
+
+OPTIONS    
+用来查询针对URI资源所支持的方法   
+
+TRACE    
+追踪路径    
+
+CONNECT       
+要求用隧道协议连接代理，将内容加密后进行传输    
+```
+
+## 数据传输方式:Content-Type
+
+```
+Content-Type: application/json
+{"name":"test0107","password":"123456"}
+
+Content-Type: application/x-www-form-urlencoded   
+name=test0107&password=123456
+```
+
+## 面试题： HTTP协议当中GET方法和POST方法的区别？
+
+```
+1.get方法一般是获取资源,post方法为了传输内容实体
+
+2.get方法的参数是直接拼接到url上进行传输,post的参数主要通过内容实体传输  
+
+3.get方法的参数只能是urlencode方式,post可以是其他Content-Type方式
+
+4.post传递参数方式相对于get方式更加安全,因为get的参数会显示到url上
+
+5.get参数传递的个数可能会因为浏览器的不同而有限制,post没有
+
+6.对于资源来说.get是安全的,post不安全
+```
+
+## 面试题： HTTP协议当中POST方法和PUT方法的区别 
+
+```
+1.post是传输内容实体,put用于传输文件
+```
+
+## HTTP响应 报文格式
+
+```
+1. 响应行   
+
+   HTTP/1.1 200 OK
+   协议版本： HTTP/1.1    
+   状态码：  200    
+   描述信息：OK   
+
+2. 响应头域   
+
+   Content-Type: application/json#响应数据类型
+   X-Frame-Options: DENY#表示该页面不能再iframe中展示
+   Content-Length: 158#响应内容的长度
+   Vary: Cookie, Origin#返回的内容添加了服务器的头部信息和Cookie
+   X-Content-Type-Options: nosniff#有助于防御MIME型攻击
+   Referrer-Policy: same-origin#对应同源请求会发送引用地址
+   Access-Control-Allow-Credentials: true#表示是否允许发送Cookie
+   Access-Control-Allow-Origin: http://101.91.150.147:8008/#指定服务器可以跨域源
+   Set-Cookie: sessionid=80ztl2ghhyxk0uakjewf5u9d037xh7om; expires=Mon, 13 Mar 2023 12:13:17 GMT; HttpOnly; Max-Age=1209600; Path=/; SameSite=Lax #设置Cookie
+
+3. 空行  
+
+4. 内容实体
+
+   {"code": "200", "msg": "Success Create", "data": {"name": "test0107", "openid": "290fc49f49dbe28661bb27f6ed785d31", "user_id": 251921}, "ip": "113.91.43.228"}    
+```
+
+## HTTP响应状态码
+
+```
+1XX: 提示信息，服务器端已经收到了请求，但是还需要进一步的处理  
+2XX: 操作成功    
+3XX: 重定向   
+4XX: 客户端错误   
+5XX: 服务器端错误
+
+100 Continue   
+200 OK  操作处理成功  
+204 No Content   请求处理成功，但是没有内容返回   
+206 Partial Content  客户端进行了范围请求，服务器按照客户端的要求返回了部分内容    
+301 Moned Permanently   永久重定向   
+302 Found   临时重定向    
+303 Other   临时重定向,明确表示客户端应该采用GET方法来获取资源     
+304 Not Modified  根据客户端请求的条件，资源并没有发生改变     
+400 Bad Request   HTTP请求的语法错误   
+403 Forbidden  对于资源的被服务器拒绝，服务器没有必要给出拒绝的理由   
+404 Not Found   无法找到请求的资源     
+500 Internal Server Error  服务器端错误   
+503 Service Unavailable  服务器临时错误      
+```
+
+## HTTP协议的特点 
+
+```
+无连接
+一次HTTP的请求和响应完成之后，会关闭掉TCP的连接     
+由于现在的网页的内容越来越丰富，浏览一个页面，不再是简单的发起一个HTTP请求，完成业务操作需要频繁的发送HTTP请求。这就要求TCP的连接可以复用。      
+通过： Connection: keep-alive (长链接) 来解决该问题 
+
+无状态
+HTTP协议对交互的场景没有记忆能力
+解决HTTP无状态的问题:
+
+cookie     
+1. 服务器生成cookies信息，在HTTP响应报文的头域当中通过Set-Cookie头域来告知客户端应当保存cookie内容   
+2. 浏览器接收响应，将cookie内容在本地保存      
+3. 浏览器针对相同域名发起HTTP请求，会附带上保存的cookies，通过请求报文的cookies头域       
+
+session    
+session是一种记录客户状态的机制，不同的是，cookie是保存在客户端的浏览器中，session是保存在服务器上。 当浏览器访问服务器的时候，服务器把用户信息记录以某种形式记录在服务器上，这就是seesion         
+
+token   
+标识用户身份的一串字符串，服务器加密生成token,保存在客户端    
+客户端的请求带上token,服务器对token解密对比即可验证身份     
+```
+
+## 面试题： cookie和session的区别
+
+```
+1. cookie是保存在客户端,session是保存到服务端
+2. cookie保存在客户端,相对于session就不是那么安全
+3. cookie的数量和数据有限制,数量一般不超过20个,数据不能超过4K
+4. cookie是HTTP协议中的规范,session是一种机制.通常会使用cookie来存储session_id
+```
+
+## 加密算法 
+
+```
+1. 对称加密   
+加密和解密采用相同的秘钥    
+优点： 加密速度快   
+缺点： 秘钥的传递和保存是一个问题，参与加密和解密的双方使用的秘钥一样，这样秘钥就很容易泄露   
+
+2. 非对称加密    
+加密和解密采用不同的秘钥(公钥和私钥)   
+优点： 加密和解密的秘钥不一样，公钥是可以公开的，只保证私钥不被泄露即可，这样秘钥的传递就变得简单很多，从而降低了被破解的几率   
+缺点： 加密速度慢   
+
+3. 线性散列算法     
+单向的不可逆的(加密之后不能够被解密) 比如，密码存储,md5加密
+```
+
+## HTTPS 
+
+```
+1. 首先客户端通过URL访问服务器建立SSL连接。
+2. 服务端收到客户端请求后，会将网站支持的证书信息（证书中包含公钥）传送一份给客户端。
+3. 客户端的服务器开始协商SSL连接的安全等级，也就是信息加密的等级。
+4. 客户端的浏览器根据双方同意的安全等级，建立会话密钥，然后利用网站的公钥将会话密钥加密，并传送给网站。
+5. 服务器利用自己的私钥解密出会话密钥。
+6. 服务器利用会话密钥加密与客户端之间的通信。
+```
+
+## 面试题： HTTP和HTTPS协议的区别 
+
+```
+1. https是http的安全版本,http的明文的数据方式传输,HTTPS是用了SSL/TLS协议进行了加密传输
+2. http的默认端口号是80,https的默认端口号是443
+3. https需要证书,http不需要
+```
+
+## Day19
+
+```
+
+```
 
 
 

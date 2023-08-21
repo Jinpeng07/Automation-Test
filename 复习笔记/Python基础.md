@@ -3830,29 +3830,121 @@ title：用于获得当前页面的标题。
 current_url：用户获得当前页面的URL
 ```
 
+# Day21
 
+## 鼠标操作的其他操作
 
+```
+需要引入
+from selenium.webdriver.common.action_chains import ActionChains
+格式:
+ActionChains(浏览器).context_click(元素).perform()
 
+1）右键单击:context_click()
+2）鼠标悬停:move_to_element()
+3）双击:double_click()
+4）拖动:drag_and_drop(source, target)
+```
 
+## 下拉列表的操作
 
+```
+1.下拉列表是非常常见的页面元素。是一种特殊的页面元素，定位和其他元素没区别，但是其操作不其他元素不同。
+2.需要导入包
+from selenium.webdriver.support.select import Select
+3.选择下列列表中的元素有三种方式
+• select_by_index()        #索引
+• select_by_visible_text() #文本
+• select_by_value()        #value属性的值
+```
 
+## 键盘操作
 
+```
+Keys类提供了键盘上几乎所有按键的方法。
+• send_keys()方法可以用来模拟键盘输入。
+• 还可以用它来输入键盘上的按键， 甚至是组合键， 如 Ctrl+A、 Ctrl+C 等。
+• 在使用键盘按键方法前需要先导入 keys 类。
+• from selenium.webdriver.common.keys import Keys
+常用的键盘操作:
+• send_keys(Keys.BACK_SPACE) 删除键（BackSpace）
+• send_keys(Keys.TAB) 制表键(Tab)(不常用)
+• send_keys(Keys.ESCAPE) esc键（Esc）
+• send_keys(Keys.ENTER) 回车键（Enter）
+• send_keys(Keys.CONTROL,‘a’) 全选（Ctrl+A）
+• send_keys(Keys.CONTROL,‘c’) 复制（Ctrl+C）
+• send_keys(Keys.CONTROL,‘x’) 剪切（Ctrl+X）
+• send_keys(Keys.CONTROL,‘v’) 粘贴（Ctrl+V）
+```
 
+## 浏览器控制
 
+```
+dr.set_window_size(宽,高)
+dr.maximize_window():最大化显示
+dr.minimize_window():最小化显示，在最小化情况下，也可以进行元素定位及操作
 
+页面前进与后退
+back()和forward()方法来模拟后退和前进按钮
 
+页面刷新
+driver.refresh()
 
+针对浏览器窗口页面截图
+get_screenshot_as_file(保存图片的位置)
+```
 
+## 多窗口处理
 
+```
+多窗口的意思是一个浏览器中打开了多个窗口
 
+• 浏览器标签页的切换
+    • 浏览器的标签页在应用中一般称为页面句柄（handle）。
+    • 获取当前窗口句柄：driver.current_window_handle
+    • 获取浏览器所有句柄：driver.window_handles
+    • 切换到指定的浏览器窗口：driver.switch_to.window(handle)
+    
+注意:
+关闭页面需要切换到页面中,获取操控页面的元素也需要切换到该页面
+关闭其中某个页面后,需要重新获取当前浏览器所有的句柄
+```
 
+## 多Frame框处理
 
+```
+在一个页面中可以嵌套另外一个页面，如frame/iframe技术，这是现在很多web应用中使用的一种方式，webdriver对象只能在一个页面（外层是默认的）中定位元素，需要一种方式将driver对象从外层切换给内层使用才能对内层的对象进行处理。
 
+webdriver中提供API：driver.switch_to.frame()
 
+1）切入Frame
+第一种方式,默认是可以给ID或者name的
 
+    driver.switch_to.frame("login_frame")
 
+第二种方式,可以传参iframe的元素对象
 
+    iframeObj = driver.find_element_by_xpath('//*[@id="login_frame"]')
+    driver.switch_to.frame(iframeObj)
+# 切换到目标元素所在的frame
+dr.switch_to.frame("iframeResult")
 
+2）从Frame切入到主体
+dr.switch_to.default_content()
+```
+
+## 警告框处理
+
+```
+警告框-alter，是一个模式框
+1、driver对象不在alter上，并且我们没办法去定位这个窗口的元素
+2、driver.switch_to.alert:暂时将浏览器对象driver交给alter用
+3、可以对alter警告框作什么事情：
+        text：返回（获取） alert/confirm/prompt 中的文字信息。
+        accept()：接受现有警告框，就是点他的确定按钮
+        dismiss()：放弃现有警告框，取消
+        send_keys(keysToSend)：发送文本至警告框。
+```
 
 
 

@@ -3946,7 +3946,389 @@ dr.switch_to.default_content()
         send_keys(keysToSend)：发送文本至警告框。
 ```
 
+# Day22
 
+## 页面滚动条操作
+
+```
+使用JS实现
+• 左右移动：js="window.scrollTo(200,1000)"
+上面的参数说明,第一个参数越大越往右边,第二个参数越大越往底部
+• Js代码的执行需要用到的方法：driver.execute_script(js)
+```
+
+## 元素等待
+
+```
+1.强制等待（无条件等待）
+使用方法：time.sleep(delay)
+
+delay的单位为秒，delay设置多少秒页面就会等待多少秒（死等），这个方法很容易让线程挂掉，使程序抛异常，所以要慎用此方法。
+
+2.显式等待（有条件等待）
+当等待的条件满足后（一般用来判断需要等待的元素是否加载出来），就继续下一步操作。等不到就一直等，如果在规定的时间之内都没找到，那么就跳出Exception。
+
+使用显示等待前需先导入显示等待所需模块和等待条件
+#显式等待模块
+from selenium.webdriver.support.ui import WebDriverWait
+#显式等待条件
+from selenium.webdriver.support import expected_conditions as EC
+
+3.隐式等待(无条件等待，在一个时间段内等待)
+一次设置，全局生效。不要当作固定等待使用，不要每次需要等待时都写一次隐式等待。
+隐式等待设置了一个最长等待时间，在规定时间内网页加载完成(也就是一般情况下你看到浏览器标签栏那个小圈不再转就代表加载完成)，则执行下一步，否则一直等到时间结束，然后执行下一步。
+
+
+#如果是只需等待页面中的一个元素加载就用显示等待，等待整个网页加载就用隐式等待。
+```
+
+## 自动化测试用例设计
+
+```
+一、自动化测试用例设计（熟练掌握）
+1、自动化测试用例一般可以由手工测试用例转化而来，需注意
+
+    不是所有的手工测试用例都要转为自动化测试用例
+    考虑到脚本开发的成本，不要选择流程太复杂的用例，可以把流程拆分成多个用例
+    选择的用例最好可以构建成场景
+    选取的用例可以是你认为是重复执行、很耗时间的部分，例如字段验证
+    选取的用例可以是主流程用例，即适用于冒烟测试的用例
+
+2、自动化测试用例的设计原则（熟练掌握）
+
+    一个用例为一个完整的场景，从用户登录系统到最终退出并关闭浏览器
+    一个用例只验证一个功能点，不要试图在用户登录后把所有的功能都验证一遍
+    尽可能少的编写逆向测试用例，一方面因为逆向逻辑的用例很多
+    另一方面自动化测试脚本本身比较脆弱
+    用例和用例之间尽量避免产生依赖。
+    一条用例完成测试之后需要对测试场景进行还原，以免影响其它用例的执行
+
+3、自动化测试用例设计实践（熟练掌握）
+测试点转为测试用例的原则是什么？
+
+    设计一条正向用例，覆盖足够多的有效等价类数据
+    设计一条反向用例，需要覆盖一条无效等价类数据，其他数据一概使用正向数据
+
+有验证码的时候，该怎么进行自动化？
+
+    让开发暂时屏蔽验证码、将验证码改为万能码（‘aaaa’）
+    懂机器学习，可以训练样本，可以达到99%以上识别成功率
+    调用OCR的接口，去解析图片中验证码，然后来用
+```
+
+## 线性脚本开发
+
+```
+线性测试：以一行行的代码直接实现测试步骤，脚本相对独立，单纯的模拟用户完整的操作场景，测试用例的开发和维护成本很高，如果一个页面元素被改动了，所有线性脚本中用到这个元素的都需要更改。是最基本的
+```
+
+## 模块化驱动脚本开发
+
+```
+模块化驱动测试：把常用、公用的一些功能、业务、步骤专门提取出来，写在一个专门的模块中，以方法、类的形式实现出来，再其他的模块如果需要这些功能，直接调用即可，无需重复显示这些代码。比如可以做登录模块、退出模块、邮件发送模块、数据库处理模块、日志生成模块等
+模块化驱动测试最大层度地去除了重复，提高了测试脚本的复用性和可维护性。
+```
+
+# Day23
+
+## 数据驱动脚本开发
+
+```
+略
+```
+
+## 检查点
+
+```
+略
+```
+
+## Unittest测试框架介绍(重点)
+
+```
+web自动化：python + selenium + unittest
+原理
+1）TestCase：
+在unittest中的一个TestCase的实例就是一个测试用例，就是一个完整的测试流程，包括测试前资源初始化(setUp)，执行测试代码(test)，以及测试后环境的还原(tearDown)。
+2）TestSuite
+测试套件，可以理解为：多个独立的测试用例（test case）或者多个独立的测试套件（test suite，可以理解为子套件）可以构成一个测试套件，然后传递给TestRunner进行测试执行。,内容也有run函数可以执行测试
+3）TestLoader
+通过unittest.TestLoader类的loadTestsFromTestCase、loadTestsFromModule、LoadTestsFromName、discover方法，可以将测试用例添加一个测试套件中。
+4）TestRunner 
+可以理解为测试集的运行器，可以在其基础上扩展子类TextTestRunner或者HTMLTestRunner，只不过生成的测试报告样式不同，此处讲解TextTestRunner，后续课程再扩展HTMLTestRunner。
+5、TestResult
+测试结果类，用来处理测试用例或测试集执行过程中的所有信息并最终输出,比如代码错误、异常、断言失败、skip等等。
+```
+
+## Unittest测试框架运行说明(重点)
+
+```
+步骤:
+1.导包，unittest是自带的框架，不需要安装
+2.创建一个单元测试类（其实就是类，只不过他继承了单元测试框架单元测试用例的类）
+3.执行
+
+单元测试类中的方法说明:
+1.setUpClass：给当前单元测试类的所有的用例进行初始化的,是类方法
+2.tearDownClass：给当前单元测试类的所有的用例进行资源释放,是类方法
+3.setUp()：主要是进行测试用例的资源初始化，测试用例的前提条件写在这
+4.test_xxx()：测试用例，要把测试用例的步骤写在这个方法中,注意要test开头,是规定
+5.tearDown()：主要是进行测试用例的资源释放的
+
+执行顺序说明:
+1.先执行setUpClass
+2.setUp()、test_xxx()、tearDown(),不管你怎么调整为，执行顺序不变
+3.最后执行tearDownClass
+4.每执行一个测试用例,2都要执行一遍
+
+区别说明:
+1.setUpClass和setUp()的区别：
+    setUp()不需要@classmethod注解；setUpClass方法需要@classmethod注解
+    setUp()实例方法，就需要创建对象再调用；setUpClass类方法，不需要对象也可以调用
+    setUp()再每一个测试用例执行之前运行一次；setUpClass方法在测试执行之前只执行一次
+    setup()是对一条测试用例的初始化；setUpClass()给当前单元测试类的所有的用例进行初始化的
+2.tearDownClass和tearDown的区别:
+	tearDown()不需要@classmethod注解；tearDownClass方法需要@classmethod注解
+    tearDown()实例方法，就需要创建对象再调用；tearDownClass类方法，不需要对象也可以调用
+    tearDown()再每一个测试用例执行之后运行一次；tearDownClass方法在测试执行之后只执行一次
+    tearDown()是对一条测试用例的资源释放；tearDownClass给当前单元测试类的所有的用例进行资源释放
+
+执行方式:
+1.执行main()方法执行的特点:unittest.main()
+2.有选择的执行测试用例
+	1.通过测试集合内部函数添加测试用例
+	2.通过模块添加执行用例
+```
+
+# Day24
+
+## 执行所有的测试用例
+
+```
+1.执行main()方法执行的特点:unittest.main()
+	注意:
+	1.是把所有的测试用例执行了一遍
+	2.执行测试用例的顺序控制不了，（按照测试用例名（方法名）的字母顺序执行的）
+```
+
+## 内部方法添加测试用例(重点) addTest(s)
+
+```
+通过内部函数添加测试用例
+步骤:
+1.生成测试套件(也叫测试集合)
+    suite = unittest.TestSuite()
+2.把测试用例添加进测试集合,两种方式添加
+	1.suite.addTest(类名("用例"))
+	2.suite.addTests(map(类名,["用例1","用例2",...]))
+3.生成测试结果对象,然后传递到run函数中
+	re = unittest.TestResult()
+	suite.run(re)
+```
+
+## 通过模块方法添加测试用例(重点) TestLoader
+
+```
+通过模块方法添加测试用例
+1.如果测试用例的数量比较大，使用testsuite自带的方法加用例到集合，很麻烦
+可以unittest中提供的testloader模块，提供了好多帮我们把测试用例加载到测试集合中的方法
+2.步骤:
+	1.创建testloader的对象
+	2.使用testloader的对象中的loadTestsFromName函数添加测试用例,这个api,返回测试套件
+		1.可以添加整个模块的测试用例
+		2.也可以添加一个单元测试类中的所有测试用例(只能添加一个单元测试类)
+		3.也可以添加单元测试类中的某个测试用例(只能添加一个单元测试类中的一个测试用例)
+
+	3.生成测试结果对象,然后传递到run函数中
+		re = unittest.TestResult()
+		suitt.run(re)
+		
+#创建loader对象
+    loader=unittest.TestLoader()
+    #参数为模块名,返回测试套件,执行一个模块中所有的用例
+    suit=loader.loadTestsFromName("Maker2Tests")
+    #执行一个模块中的某个单元测试类中的所有用例
+    # suit=loader.loadTestsFromName("Maker2Tests.Maker")
+    #执行一个模块中的某个单元测试类中的某个用例
+    suit=loader.loadTestsFromName("Maker2Tests.Maker.test_05")
+
+    # 生成测试结果对象, 然后传递到run函数中
+    re = unittest.TestResult()
+    suit.run(re)
+```
+
+## 通过路径方式添加测试用例(重点) defaultTestLoader
+
+```
+使用unittest.defaultTestLoader对象的discover方法加载用例，可以将指定路径所有符合匹配规则（pattern）的文件中的单元测试用例一次性加载
+第一个参数是一个目录，这个目录下可以有单元测试用例的文件（.py）
+第二个参数是填文件名,可以通配
+ suitt = unittest.defaultTestLoader.discover(r"./Maker/", pattern="unit*.py")
+说明: 
+	1."unit*.py指的是以unit开头，以.py结尾的文件
+	2..py中的单元测试用例要使用unittest框架写的测试用例
+
+步骤:
+	1.生成测试套件(也叫测试集合)
+	2.使用discover方法批量添加
+	3.生成测试结果对象,然后传递到run函数中
+		re = unittest.TestResult()
+		suitt.run(re)0
+```
+
+## 测试报告 TextTestRunner
+
+```
+在前面测试用例、测试集合执行的时候都是用testsuite()的run()方法：suitt.run(result),如果要生成text文本形式的测试执行报告,可以使用TestRunner   
+将最后执行的:
+re = unittest.TestResult()
+suitt.run(re)
+改为:
+with open(r"./re.txt", "w", encoding="utf-8") as f:
+  runner = unittest.TextTestRunner(f, descriptions="单元测试报告执行", verbosity=5)
+  runner.run(suitt)
+函数说明:
+f:文件描述符
+descriptions:用来标记是否输出测试用例的描述信息。布尔类型,没什么用
+verbosity参数可以控制输出的错误报告的详细程度，只有3个取值：
+	0 (quiet): 只显示执行的用例的总数和全局的执行结果。
+	1 (default): 默认值，显示执行的用例的总数和全局的执行结果，并对每个用例的执行结果（成功T或失败F）有个标注。(测试用例中如果有和预计不同,会出现F)
+	2+ (verbose): 显示执行的用例的总数和全局的执行结果，并输出每个用例的详细的执行结果。
+```
+
+## HTMLTestRunner(重点)
+
+```
+前面使用runner运行器是unittest自带的，效果不是很好，我们第三方开发的来用，可以以HTML格式展示结果。
+
+import unittest
+from HTMLTestRunner import HTMLTestRunner
+import time
+if __name__=='__main__':
+    suit = unittest.defaultTestLoader.discover(r'./MyTestFile/', pattern="unit*.py")
+
+    filename="./"+time.strftime("%Y-%m-%d %H_%M_%S")+"res.html"
+    with open(filename,"wb") as f:
+        runner=HTMLTestRunner(f,verbosity=2,title="单元测试报告",description="第一次运行结果")
+        runner.run(suit)
+
+```
+
+## 邮件的自动化
+
+```
+通过python我们可以自动发送报告给负责人
+Python对SMTP支持有smtplib和email两个模块，email负责构造邮件，smtplib负责发送邮件
+1.把html发送为正文
+2.把html发送为附件
+
+import unittest
+from HTMLTestRunner import HTMLTestRunner
+import time
+#构建邮件内容Subject
+from email.mime.text import MIMEText
+#构建邮件头部信息的
+from email.header import Header
+#构建发件人
+from email.utils import formataddr
+#添加附件
+from email.mime.multipart import MIMEMultipart
+#创建发送邮件对象
+import smtplib
+
+
+if __name__ == '__main__':
+    loder = unittest.TestLoader()
+    suite = loder.loadTestsFromName("TestClass")
+    print(suite)
+    filename = time.strftime("%Y-%m-%d-%H_%M_%S") + "res.html"
+    with open(filename, "wb") as f:
+        runner = HTMLTestRunner(f, verbosity=2, title="单元测试报告", description="第一次运行结果")
+        runner.run(suite)
+
+    #获取报告内容
+    htmlreport = None
+    with open(filename, 'rb') as f:
+        htmlreport = f.read()
+
+    #构建邮件
+    mail = MIMEText(htmlreport, 'html', 'utf-8')
+    mail['Subject'] = Header(f'邮件自动化{filename}', 'utf-8')
+    mail['From'] = formataddr(['JInpeng_Wang', '1832508189@qq.com'])
+    mail['to'] = '18770766249@163.com'
+
+    #添加附件
+    mp = MIMEMultipart()
+    mail2 = MIMEText(htmlreport, 'base64', 'utf-8')
+    mail2['Content-Type'] = "application/octet-stream"
+    print(filename)
+    mail2['Content-Disposition'] = f'attachment;filename={filename}'
+    mp['Subject'] = Header(f'邮件自动化附件', 'utf-8')
+    mp['From'] = formataddr(['JInpeng_Wang', '1832508189@qq.com'])
+    mp['to'] = '18770766249@163.com'
+    mp.attach(mail2)
+
+    ##构建SMTP对象
+    smpt = smtplib.SMTP()
+    smpt.connect("smtp.qq.com")
+    smpt.login('1832508189@qq.com', 'wlcydcooamluceah')
+    smpt.sendmail('1832508189@qq.com', '18770766249@163.com', mail.as_string())
+    smpt.sendmail('1832508189@qq.com', '18770766249@163.com', mp.as_string())
+    smpt.quit()
+```
+
+## DDT
+
+```
+ddt是“Data-Driven Tests”的缩写，是unittest中实现数据驱动的主要方式之一，它主要包括如下的装饰器
+
+@ddt
+标记测试类，支持DDT数据驱动
+
+@data
+标记测试用例，传递参数
+
+@unpack
+当@data中的参数是元组、列表时，用于分割序列中的元素
+
+@file_data
+标记测试用例，传递文件，支持yaml和json文件
+
+
+test_data=['hello','world']
+
+@ddt.ddt#代表下面这个单元测试支持ddt驱动
+class Testmaker(unittest.TestCase):
+
+    @ddt.data(1,2)
+    def test_ddt(self,v):#这个用例会执行2遍
+        print("test_ddt")
+        print(v)#1 2
+
+    @ddt.data((1,2,3),[3,4,5])
+    @ddt.unpack
+    def test_ddt2(self,v1,v2,v3):#data参数中的序列有多少个数,那么这里的参数个数就必须是多少个
+        print("test_ddt2")
+        print(v1)
+        print(v2)
+
+    @ddt.data(test_data)#参数是列表时
+    @ddt.unpack
+    def test_ddt3(self,v1,v2):
+        print("test_ddt3")
+        print(v1)
+        print(v2)
+
+    @ddt.file_data("mydata.yaml")#参数是文件名
+    def test_ddt4(self,txt):#执行了4次,因为mydata.yaml中有4个数据
+        print("test_ddt4")
+        print(txt)
+        
+if __name__=='__main__':
+    unittest.main()
+```
+
+# Day25
 
 
 

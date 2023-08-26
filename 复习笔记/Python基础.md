@@ -4330,13 +4330,291 @@ if __name__=='__main__':
 
 # Day25
 
+## unittest使用ddt时,如果使用测试套件执行用例时,会出现添加不了测试用例的问题
+
+```
+问题: #注意:使用了ddt加载数据后,会改变测试用例的名字,导致添加进测试套件中出错
+
+解决方法:
+第一种方式,使用路径添加模块方式生成测试套件,这个方式不需要测试用例的名字
+if __name__=='__main__':
+    suit = unittest.defaultTestLoader.discover(r'./', pattern="03unit.py")
+    re = unittest.TestResult()
+    suit.run(re)
+    
+第二种方式:
+if __name__=='__main__':
+    suit = unittest.TestSuite()
+    #获取ddt驱动之后的测试用例名字
+    mylist=unittest.TestLoader().getTestCaseNames(Testmaker)
+    print(mylist)
+    suit.addTests(map(Testmaker,mylist))
+    re = unittest.TestResult()
+    suit.run(re)
+```
+
+## 断言
+
+```
+断言：一个自动化测试用例，测试步骤、测试的断言缺一不可
+unittest中提供的断言方法有：
+     assertEqual(a,b,msg=""):就是判断a和b是否相等，如果相等，则断言成功，如果不相等，会断言失败，并且输出msg消息
+     assertNotEqual(a,b,msg="")：就是判断a和b是否不相等
+     assertTrue(a):就是判断a是否为True这个bool值
+     assertFalse(a):就是判断a是否为False这个bool值
+     assertIs(a,b,msg=""):判断a和b的内存地址是否相等，如果相等则身份一致
+     assertIsNot(a,b,msg):判断a和b的内存地址是否不相等，如果像等了，返回false，断言失败
+     assertIsNone(a):判断对象a是不是空指针(没有指向堆内存中空间),如果是则断言成功
+     assertIsNotNone(a):判断对象a是不是空指针，如果是，则断言失败
+     assertIn(a,b):判断a是不是b的成员，如果是则断言成功
+     assertNotIn((a,b):判断a是不是b的成员，如果不是则断言成功
+     assertIsInstance(a,b):判断a是b的一个实例对象
+     assertIsNotInstance(a,b):判断a不是b的一个实例对象
+```
+
+## POM模式
+
+```
+略
+```
+
+## pytest的介绍
+
+```
+pytest是Python的一款单元测试框架,一种全新的框架思维来管理和规范我们的测试脚本，从而实现高类聚低耦合的理念
+```
+
+## pytest的约束
+
+```
+1.所有的单测文件名都需要满足test_*.py格式或*_test.py格式。
+2.在单测文件中，测试类以Test开头，并且不能带有 init 方法(注意：定义class时，需要以Test开头，不然pytest是不会去运行该class的)
+3.在单测类中，可以包含一个或多个test_开头的函数。
+此时，在执行pytest命令时，会自动从当前目录及子目录中寻找符合上述约束的测试函数来执行。
+```
+
+## pytest的命令
+
+```
+import pytest
+# #执行别的文件中所有用例
+# pytest.main(["./01hello_pytest.py","-s"])
+# #查看pytest的版本
+# pytest.main(["--version"])
+# #查看内置函数参数
+# pytest.main(["--fixtures"])
+#查看帮助信息
+# pytest.main(['--help'])
+```
+
+## pytest的执行用例
+
+```
+import pytest
+#1.执行某个目录中所有的用例
+# pytest.main(["./mycasetest/"])
+#2.执行某个目录中某个模块的所有用例
+# pytest.main(["./mycasetest/test_02.py"])
+#3.执行某个目录中某个模块的某个用例
+# pytest.main(["./mycasetest/test_02.py::test_01"])
+#4.执行某个目录中某个模块的某几个用例,用例的上面需要标记@pytest.mark.slow,slow自己取的名字
+pytest.main(["./mycasetest/test_02.py::test_01","-m","slow"])
+#执行某个模块中某个单元测试类中的某个测试用例
+# pytest.main(["./mycasetest/test_03.py::Test_maker::test_m2","-s"])
+#执行某个目录中的所有用例 但有执行到错误就停止
+# pytest.main(['./mycasetest/','-x'])
+# 执行某个目录中的所有用例 ,指定出错的个数,如果达到个数,就停止后面的执行
+# pytest.main(['./mycasetest/','--maxfail=2',"-s"])
+#通过匹配关键字来执行用例,注意,如果是test_0,其实包含到了_后面的字母
+# pytest.main(['./mycasetest/','-k','test_1','-s'])
+#通过匹配来实现文件中有包含maker的类名的单元测试来
+# pytest.main(['./mycasetest/','-k','maker','-s'])
+#不执行某个单元测试类中的某个用例
+# pytest.main(['./mycasetest/','-k','maker and not test_m2','-s'])
+#不执行目录中的一些用例
+pytest.main(['./mycasetest/','-s','-k','not test_1'])
+```
+
+## pytest自定义fixture
+
+```
+fixture:即测试用例执行的环境准备和清理，在unittest中指setup/teardown
+fixture:主要的目的是为了提供中可靠和可重复性的手段去运行那些最基本的测试内容。
+
+fixtue的作用范围 
+scope参数，控制fixture函数的作用范围
+scope = "function" ，默认范围，针对测试函数(测试方法)，测试用例执行前会执行该函数的yield前面部分,相当于setUp,测试用例执行完成后去执行yield后部分,相当于teraDwon 
+scope = "class" ， 测试类，类当中所有的测试用例执行前会执行该函数的yield前面部分,相当于setUpClass,测试用例执行完成后去执行yield后部分,相当于teraDwonClass 
+scope = "module" ， 测试模块，一个模块当中的所有的测试用例执行前调用函数的yield前面部分,相当于整个模块的setUpClass,模块中所有的用例完毕后会执行yield后部分,相当于整个模块的teraDwonClass
+scope = "session"， 测试会话， 当调用别的文件的fixture时,会调用
 
 
+import pytest
+
+@pytest.fixture(scope='class',autouse=True)
+def mysetupclass():#相当于setUpClass,只执行一次
+    print("mysetupclass")
+    yield
+    print("teardownclass")
+    assert 1
+
+class TestDome():
+    def test_01(self):
+        print("test_01")
+        assert 1
+
+    def test_02(self):
+        print("test_02")
+        assert 1
+
+if __name__=='__main__':
+    pytest.main(['05fixture的使用4.py','-s'])
+```
+
+## 测试用例中使用自定义fixture的返回值
+
+```
+@pytest.fixture(scope='function')
+def mytest():
+    print("mytest")
+    return "mytest返回数据"
+
+def test_01(mytest):
+    print("test_01")
+    print(mytest)
+
+if __name__=='__main__':
+    pytest.main(['07fixture的返回值1.py','-s'])
+```
+
+## fixure 中获取params 传入的数据 实现数据驱动
+
+```
+import pytest
+def my_data():
+    return ['1111','2222','3333']
+
+@pytest.fixture(scope="function",params=my_data(),autouse=True)
+def mytest(request):#固定写request
+    print("mytest")
+    print(request.param)
+
+def test_01():#数据有三个,所以调用3次.如果test_01想要数据,那么就mytest返回,然后test_01使用
+    print("test_01")
+
+if __name__=='__main__':
+    pytest.main(['08fixture实现数据驱动.py','-s'])
+```
+
+## 测试用例中使用 fixture的yield后的数据
+
+```
+import pytest
+def my_data():
+    return ['1111','2222','3333']
+
+@pytest.fixture(scope="function",params=my_data(),autouse=True)
+def mytest(request):#固定写request
+    print("mytest")
+    yield  request.param
+    print("end mytest")
+
+def test_01(mytest):#数据有三个,所以调用3次.如果test_01想要数据,那么就mytest返回,然后test_01使用
+    print("test_01")
+    print(mytest)
+
+if __name__=='__main__':
+    pytest.main(['09fixture的yield后的数据.py','-s'])
+```
+
+## ids 与params参数结合使用，给参数起别名
+
+```
+import pytest
+def my_data():
+    return ['1111','2222','3333']
+
+@pytest.fixture(scope="function",params=my_data(),autouse=True,ids=['a','b','c'])
+def mytest(request):#固定写request
+    print("mytest")
+    yield  request.param
+    print("end mytest")
+
+def test_01(mytest):#数据有三个,所以调用3次.如果test_01想要数据,那么就mytest返回,然后test_01使用
+    print("test_01")
+    print(mytest)
+
+if __name__=='__main__':
+    pytest.main(['10fixture的ids给参数取别名.py','-s','-v'])
+```
+
+## name 参数 给fixture 起别名
+
+```
+import pytest
+def my_data():
+    return ['1111','2222','3333']
+
+@pytest.fixture(scope="function",params=my_data(),autouse=True,ids=['a','b','c'],name='run_sql')
+def mytest(request):#固定写request
+    print("mytest")
+    yield  request.param
+    print("end mytest")
+
+def test_01(run_sql):#因为name="run_sql",等于给上面被fixture修饰的函数取别名叫run_sql
+    print("test_01")
+    print(run_sql)
+
+if __name__=='__main__':
+    pytest.main(['11name参数给fixture起别名.py','-s','-v'])
+```
+
+## fixture 结合 conftest.py 文件使用
+
+```
+略
+```
+
+## pytest执行过程
+
+```
+1.查询根目录下的conftest.py文件
+2.查询根目录下的pytest.ini文件，找到测试用例的位置
+3.查询测试用例目录下的conftest.py文件
+4.查询测试用例的py文件中是否有setup,teardown,setup_class,teardown_class
+5.再根据pytest.ini文件的测试用例规则去查找用例并执行
+```
+
+## pytest参数化
+
+```
+熟悉unittest单元测试框架的小伙伴知道，使用ddt进行数据驱动测试，那么身为功能更加强大且更加灵活的Pytest框架怎么可能没有数据驱动的概念呢？Pytest使用@pytest.mark.parametrize装饰器来实现数据驱动测试的，也就是常说的参数化。
+
+parametrize语法
+parametrize(self,argnames, argvalues, indirect=False, ids=None, scope=None)
+参数说明:
+argnames：参数名。
+
+argvalues：参数对应值，类型必须为list。如果只有一个参数，里面则是值的列表：
+
+如：@pytest.mark.parametrize("username", ["yy", "yy2", "yy3"])。如果有多个参数，则需要用元组来存放值，一个元组对应一组参数的值，如：@pytest.mark.parametrize("name,pwd", [("yy1", "123"), ("yy2", "123"), ("yy3", "123")])。
+ 
+indirect：如果设置成True，则把传进来的参数当函数执行，而不是一个参数。
+
+ids：用例的ID，传一个字符串列表，用来标识每一个测试用例，自定义测试数据结果，增加可读性。
 
 
+import pytest
+data=["小明","小花"]
+@pytest.mark.parametrize("name",data)
+def test_dome(name):
+    print("test_dome")
+    print(name)
 
 
-
+if __name__=='__main__':
+    pytest.main(['13pytest参数化.py','-s'])
+```
 
 
 

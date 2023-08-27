@@ -4435,6 +4435,8 @@ pytest.main(["./mycasetest/test_02.py::test_01","-m","slow"])
 pytest.main(['./mycasetest/','-s','-k','not test_1'])
 ```
 
+# Day26
+
 ## pytest自定义fixture
 
 ```
@@ -4603,7 +4605,7 @@ indirect：如果设置成True，则把传进来的参数当函数执行，而�
 
 ids：用例的ID，传一个字符串列表，用来标识每一个测试用例，自定义测试数据结果，增加可读性。
 
-
+1.单个数据
 import pytest
 data=["小明","小花"]
 @pytest.mark.parametrize("name",data)
@@ -4611,10 +4613,407 @@ def test_dome(name):
     print("test_dome")
     print(name)
 
+2.一组数据
+a.列表嵌套字典
+import pytest
+data=[
+    {"username":"admin1","passwd":"123"},
+    {"username":"admin2","passwd":"321"}
+]
+@pytest.mark.parametrize("name",data)
+def test_dome(name):
+    print("test_dome")
+    print(name)
 
-if __name__=='__main__':
-    pytest.main(['13pytest参数化.py','-s'])
+
+b.列表嵌套列表
+import pytest
+data=[
+    ["maker","123"],
+    ['maker2','222']
+]
+@pytest.mark.parametrize("name,passwd",data)
+def test_dome(name,passwd):
+    print("test_dome")
+    print(name)
+    print(passwd)
+    
+    
+c.列表嵌套元组
+import pytest
+data=[
+    ("maker","123"),
+    ("maker2","222")
+]
+@pytest.mark.parametrize("name,passwd",data)
+def test_dome(name,passwd):
+    print("test_dome")
+    print(name)
+    print(passwd)
+    
+    
+3.使用场景
+a.修饰函数时,往函数内传递数据,如果上面的例子
+b.修饰类时,往类内的成员函数传递数据
+import pytest
+data=[
+    ("maker","123"),
+    ("maker2","222")
+]
+@pytest.mark.parametrize("name,passwd",data)
+class Testmaker():
+    def test_maker(self,name,passwd):
+        print("test_maker")
+        print(name,passwd)
+
+    def test_maker2(self,name,passwd):
+        print("test_maker2")
+        print(name,passwd)
+#注意,如果修饰类,那么类中的所有成员函数都必须接受数据,不然报错
+
+
+4.多个参数化装饰器,修饰一个函数
+import pytest
+data=[
+    ("maker","123"),
+    ("maker2","222")
+]
+mydata=['1111','2222']
+
+@pytest.mark.parametrize("name,passwd",data)
+@pytest.mark.parametrize("myname",mydata)
+class Testmaker():
+    def test_maker(self,name,passwd,myname):
+        print("test_maker")
+        print(name,passwd)
+        print(myname)
+#注意:测试用例会被调用多装饰器参数中的数据相除叠加的次数,如果上面的就是4次
+
+
+5.标识每个测试用例
+import pytest
+data=[
+    (10,20,30),
+    (40,50,90)
+]
+
+ids=["a:{}+b:{}=expect:{}".format(a,b,expect) for a,b,expect in data]
+
+def add(a,b):
+    return a+b
+
+@pytest.mark.parametrize("a,b,e",data,ids=ids)
+def test_maker(a,b,e):
+    print("test_maker")
+    print("a=%d,b=%d,e=%d"%(a,b,e))
+    assert add(a,b)==e
 ```
+
+# Day27
+
+## Allure介绍
+
+```
+在当前市面上所有第三方或者自研的测试报告系统中，Allure 是最全面，且支持的测试框架最多的一个测试报告系统。它是开源的测试报告框架，它旨在创建让团队每一个人都清楚明了的测试报告。
+```
+
+## Allure使用
+
+```
+import allure
+
+@allure.feature("功能名称")
+def test_01():
+    print("test_01")
+    assert 1
+
+@allure.story("子功能名称")
+def test_02():
+    print("test_02")
+    assert 1
+
+@allure.step("步骤细节")
+def test_03():
+    print("test_03")
+    assert 1
+
+
+
+    
+第一步:
+生成json文件
+终端运行:pytest 文件名.py --alluredir=json文件存储的位置 --clean-alluredir
+说明:
+--alluredir:指定json文件存储的位置,如果有这个文件夹,那么就直接存储,如果没有这个文件夹,就生成这个文件夹,然后再存储
+--clean-alluredir:清除上一次的文件
+
+第二步:
+第一种方式打开测试报告
+allure serve ./生成的json文件夹
+这时会调用系统默认的浏览器,打开页面
+注意:如果pycharm用不了allure,那么就要进入生成json文件夹的上一层目录中,打开cmd,输入命令
+
+第二种方式打开测试报告
+1.把json文件生成为html文件
+生成html报告:allure generate ./json的文件夹 -o ./html文件存储的位置 --clean
+html文件存储的位置:如果有这个文件夹就把html文件直接存储到这个文件,如果没有就生成这个文件夹,然后在把生成的html文件存储到这个文件夹
+2.打开html报告:allure open -h 127.0.0.1 -p 8883 ./生成html文件夹的名字
+
+```
+
+## Allure实战
+
+```
+1.功能上加@allure.feature("功能名称")
+2.子功能上加@allure.story("子功能名称")
+3.步骤上加@allure.step("步骤细节")
+4.联测试用例（可以直接给测试用例的地址链接）
+@allure.testcase("https://www.baidu.com","测试用例链接")
+
+import allure
+import pytest
+import time
+from selenium import webdriver
+
+@allure.testcase("https://www.baidu.com")
+@allure.feature("百度搜索")
+@pytest.mark.parametrize("data",["allure",'pytest','unittest'])
+def test_maker(data):
+    with allure.step("打开网页"):
+        dr=webdriver.Firefox()
+        dr.get("https://www.baidu.com")
+        dr.maximize_window()
+        time.sleep(2)
+
+    with allure.step(f"输入搜索词:{data}"):
+        dr.find_element_by_id("kw").send_keys(data)
+        time.sleep(2)
+        dr.find_element_by_id('su').click()
+        time.sleep(2)
+
+    with allure.step("保存图片"):
+        dr.save_screenshot("./baidu.png")
+        allure.attach.file("./baidu.png",attachment_type=allure.attachment_type.PNG)
+
+    with allure.step("关闭浏览器"):
+        dr.quit()
+
+
+生成json文件
+终端运行:pytest 文件名.py --alluredir=json文件存储的位置 --clean-alluredir
+
+打开测试报告
+allure serve ./生成的json文件夹
+```
+
+# Day28
+
+## 接口的请求和响应
+
+```
+略
+```
+
+## 常用的接口测试工具
+
+```
+1  常用浏览器（接口测试、报文捕获及解析）(没有接口文档的时候)
+2  Postman简介
+	Postman是比较完整的API测试开发环境，可以使得API测试开发变得快速、容易使用
+3  Jmeter简介
+	Apache JMeter是Apache组织开发的基于Java的压力测试工具。用于对软件做压力测试，它最初被设计用于Web应用测试，但后来扩展到其他测试领域。能够对HTTP和FTP服务器进行压力和性能测试， 也可以对任何数据库进行同样的测试（通过JDBC）
+	(全但不精,主要是性能测试,但也可以进行接口测试)
+4  Fiddler简介
+	Fiddler是一个http协议调试代理工具，它能够记录并检查所有你的电脑和互联网之间的http通讯，设置断点，查看所有的“进出”Fiddler的数据（指cookie,html,js,css等文件）。
+	常用来抓包,也可以进行接口测试
+```
+
+## 接口测试用例的设计(重点)
+
+```
+略
+```
+
+## postman
+
+```
+postman发送无参get请求(重点)
+postman发送有参的get请求(重点)
+postman发送post请求(重点)
+```
+
+## 参数化运行原理
+
+```
+自动化测试的两大核心:
+1.参数化:
+在程序中使用变量代替常量的过程
+循环实现脚本的运行
+数据的来源可能是程序本身的集合,字典等,或外部文件中(csv,text)的数据,进行接口测试
+
+2.
+断言
+脚本中添加相应的判断,实现脚本的自动化比较(判断),程序的实际结果和预期结果
+断言有自定义的和框架内置的
+```
+
+## postman的参数化运行(重点)
+
+```
+步骤:
+1.准备参数化的文件.csv文件
+2.在postman中创建请求
+以整个请求的集合为一个主体,把要参数化运行的请求单独放到一个集合中
+3.使用设置好的变量名代替相对应位置的常量.postman中用{{}}把变量名包含起来.列如:{{u_id}}
+4.在postman中,启动runner,运行collection
+5.选择要进行参数化运行的集合
+6.设置运行效果
+设置运行的迭代次数,一般你有多少个数据就填多少
+设置延时,请求和请求之间的时间
+选择数据文件,你存储数据的文件
+设置文件类型和查看预览效果
+其他信息设置,默认就可以
+7.开启运行脚本,查看和等待结果
+8.结果显示:0成功,0失败,是因为我们还没有添加断言,只是运行了,没有任何比较,所以是没有价值的
+```
+
+## postman的断言(重点)
+
+```
+1.什么是断言:就是判断
+
+2.postman的断言
+postman有个叫tests模块,就是对http响应结果进行判断的地方
+好处是:postman有很多断言
+坏处是:要敲代码
+postman支持javascript语言,包含了一个很强大的node.js
+postman脚本应用场景:
+a.断言(tests模块),作用是在接受http响应后进行处理和运行
+b.预处理信息(Pre-request-script)作用是在接受http响应前进行处理和运行,可以配合参数化进行.
+通过制定的脚本运行(读取参数文件)
+c.控制请求的运行,比如跳转到某一个请求,或者循环执行一个请求
+脚本运行顺序(了解):b->c->a
+
+3.使用断言
+案例一:
+1.使用后台程序,显示首页接口
+2.创建请求,输入url
+3.选择tests模块,点击右边的Status code:Code is 200和Response time is less than 200ms
+分别表示返回的code要是200,响应的时间小于200ms
+4.点击send,看返回的结果的Test Results
+注意:断言里的数据是可以更改的,内置断言太多,具体用到什么可以百度
+
+案例二:判断返回的json数据
+1.使用后台程序,显示首页接口
+2.创建请求,输入url
+3.选择tests模块,点击Response body:Json value check,改为下面的代码
+pm.test("Your test name", function () {
+    var jsonData = pm.response.json();
+    var v=jsonData.msg;(如果json中有数组,用[]下标方式获取)
+    pm.expect(v).to.equal("成功");
+});
+
+4.点击send,看返回的结果的Test Results
+
+响应的时间小于200ms
+tests['Response time is less than 200ms'] = responseTime < 500;(了解一下)
+```
+
+## postman的环境变量
+
+```
+1.提前把数据存储到变量中,后期使用的时候直接用
+2.postman的右上角的"眼睛"
+3.Globals和Environment
+Globals:全局环境变量,所有的请求都可以用
+Environment:局部环境变量,要配置到某个请求中
+使用操作看文档
+```
+
+## postman的脚本导出
+
+```
+1.在请求的最右边的</>,点击它,然后选择python-requests
+2.复制代码
+```
+
+## requests简介及安装
+
+```
+略
+```
+
+## requests函数和属性介绍(重点)
+
+```
+函数:
+1.request:构造一个请求,支持其他方法
+2.get:获取html的主要方法,至少一个参数,有返回值,返回值就是这次请求的响应结果
+3.post:向html提交post请求
+
+属性:
+response.url：返回请求网站的 url
+response.status_code：返回响应的状态码
+response.encoding：返回响应的编码方式
+response.cookies：返回响应的 Cookie 信息
+response.headers：返回响应头
+response.content：返回 bytes 类型的响应体(二进制方式)
+response.text：返回 str 类型的响应体，相当于 response.content.decode('utf-8’)
+```
+
+## requests请求
+
+```
+requests的get无参(重点)
+def mytest01():
+    res=requests.get("https://www.baidu.com")
+    print(res.status_code)
+    res.encoding='utf8'
+    print(res.text)
+    
+    
+requests的get有参(重点)
+def mytest02():
+    data={"name":"aaa","passwd":"123456","email":"242432@qq.com"}
+    res=requests.get("http://127.0.0.1:8808//api/block/register",params=data)
+    print(res.text)
+
+
+requests的post(重点)
+def mytest01():
+    data={"name":"aaa","passwd":"123456"}
+    res=requests.post("http://127.0.0.1:8808//api/block/login",data=data)
+    print(res.text)
+
+json请求:
+def mytest01():
+    data={"name":"aaa"}
+    res=requests.post("http://127.0.0.1:8808//api/block/msg",json=data)
+    print(res.text)
+```
+
+## 将结果转换为json格式
+
+```
+import requests
+
+def mytest01():
+    data={"name":"aaa"}
+    res=requests.post("http://127.0.0.1:8808//api/block/msg",json=data)
+    print(res.text)
+    rj=res.json()
+    print(rj['data']['money'])
+```
+
+
+
+
+
+
+
+
+
+
 
 
 

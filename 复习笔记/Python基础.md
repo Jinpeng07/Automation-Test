@@ -1294,7 +1294,7 @@ ReadXml()
 
 
 
-# Day08
+# Day8
 
 ## xls格式文件写
 
@@ -1581,7 +1581,7 @@ with open("1.yaml",'r',encoding='utf8') as f:
 
 
 
-# Day09
+# Day9
 
 ## 面向对象
 
@@ -5005,9 +5005,148 @@ def mytest01():
     print(rj['data']['money'])
 ```
 
+# Day29
+
+## unittest框架和requests结合
+
+```
+import requests
+import unittest
+import time
+
+class Maker(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.url='http://127.0.0.1:8808/api'
+        globals()['n']=0
+
+    def setUp(self):
+        n=globals()['n']
+        #每个用例的预期结果
+        if n==0:
+            self.mydata={"code":"200","msg":"成功","data":None}
+        elif n==1:
+            self.mydata={"code":"200","msg":"成功","data":"maker"}
+        elif n==2:
+            self.mydata={"code":"200","msg":"成功","data":"maker"}
+        elif n==3:
+            self.mydata={"code": "200","msg":"成功","data": {
+                "id": 0,
+                "money": "金额",
+                "name": "测试",
+                "number": "等级"
+                }
+            }
+
+    #get无参
+    def test_get(self):
+        globals()['n']= 1
+        print("test_get")
+        res=requests.get(self.url+'/block')
+        print(self.mydata)
+        #实际结果
+        rj=res.json()
+        self.assertEqual(rj,self.mydata,'用例未通过')
+
+    #get有参数
+    def test_getmaker(self):
+        globals()['n']= 2
+        print("test_getmaker")
+        data={"name":"maker","passwd":"123456","email":"75242424@qq.com"}
+        res=requests.get(self.url+'/block/register',params=data)
+        print(self.mydata)
+        # 实际结果
+        rj = res.json()
+        self.assertEqual(rj, self.mydata, '用例未通过')
+
+    #post表单
+    def test_post(self):
+        globals()['n'] = 3
+        print("test_post")
+        data={"name":"maker","passwd":"123456"}
+        res=requests.post(self.url+'/block/login',data=data)
+        print(self.mydata)
+        # 实际结果
+        rj = res.json()
+        self.assertEqual(rj, self.mydata, '用例未通过')
+
+    #post的json
+    def test_postjson(self):
+        print("test_postjson")
+        data={"name":"maker"}
+        res = requests.post(self.url + '/block/msg', json=data)
+        print(self.mydata)
+        # 实际结果
+        rj = res.json()
+        self.assertEqual(rj, self.mydata, '用例未通过')
+
+```
 
 
 
+# Day30
+
+## requests参数化-csv文件-完整版
+
+```
+import csv
+import time
+import requests
+import hashlib
+
+
+url = 'https://fanyi-api.baidu.com/api/trans/vip/translate'
+f = 'zh'
+to = 'en'
+appid = 20230122001536890
+salt = 1435660288
+
+
+def readcsv(filepath):
+    mylist = []
+    with open(filepath, 'r', encoding='gbk') as f:
+        csvobj = csv.reader(f)
+        for i in csvobj:
+            mylist.append(i)
+    return mylist
+
+
+def writecsv(filepath, mylist):
+    with open(filepath, 'w', encoding='gbk', newline="") as f:
+        csvobj = csv.writer(f)
+        for i in mylist:
+            csvobj.writerow(i)
+
+
+def tbaidu():
+    csvlist = readcsv("data.csv")
+    result = [["Chinese", "English"]]
+    for row in csvlist:
+        if row[0] == 'Chinese':
+            continue
+        q = row[0]
+        sign = hashlib.md5((str(appid) + q + str(salt) + 'NYc5tKmC1cVGuquHx1BL').encode('utf8')).hexdigest()
+        print(sign)
+        full_resquest = f'{url}?q={q}&from={f}&to={to}&appid={appid}&salt={salt}&sign={sign}'
+        res = requests.get(full_resquest)
+        resjson = res.json()
+        print(resjson)
+        templist = [resjson['trans_result'][0]['src'], resjson['trans_result'][0]['dst']]
+        result.append(templist)
+        time.sleep(2)
+    print(result)
+    writecsv("datares.csv", result)
+
+
+tbaidu()
+```
+
+## requests参数化-txt文件
+
+```
+目的:把后台程序的接口参数化,意思把接口的数据放到.txt中
+略
+```
 
 
 

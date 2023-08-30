@@ -1,0 +1,55 @@
+一.下载docker
+1.更新源
+yum update -y
+2.重启操作系统
+reboot
+3.安装docker
+yum install -y docker
+4.查看docker版本
+docker version
+5.启动docker
+systemctl start docker
+6.添加入开机启动
+systemctl enable docker
+
+
+二.下载环境镜像
+1.搜索镜像
+docker search -s 10 lamp
+2.下载镜像
+docker pull docker.io/tutum/lamp 
+3.查看镜像
+docker images
+
+三.
+1.创建一个目录,用来存储数据库的数据
+mkdir /mysql_data
+2.把mysql_data目录映射到docker容器中的目录,因为默认情况数据库的数据是存储到docker容器中,为了减小容器的大小,把数据存储到磁盘
+docker run -d --name=lamp -p 8080:80 -p 3306:3306 -v /mysql_data:/var/lib/mysql docker.io/tutum/lamp
+3.进入容器
+docker exec -it lamp /bin/bash
+4.设置mysql的root用户密码
+mysql_secure_installation
+按下回城键你会看见结尾如下的对话。 
+Enter current password for root (enter for none):<–初次运行直接回车 
+Set root password? [Y/n] <– 是否设置root用户密码，输入y并回车或直接回车 
+New password: <– 设置root用户的密码 
+Re-enter new password: <– 再输入一次你设置的密码 
+Remove anonymous uclear
+sers? [Y/n] <– 是否删除匿名用户，回车 
+Disallow root login remotely? [Y/n] <–是否禁止root远程登录,回车 
+Remove test database and access to it? [Y/n] <– 是否删除test数据库，回车 
+Reload privilege tables now? [Y/n] <– 是否重新加载权限表，回车
+
+All done! If you’ve completed all of the above steps, your MariaDB 
+installation should now be secure.
+
+Thanks for using MariaDB!
+
+5.初始化数据库
+	1.进入mysql
+	mysql -uroot -p"自己的数据库密码" 
+	2.创建数据库
+	create database wp;
+	3.退出数据库
+	\q

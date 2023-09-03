@@ -833,7 +833,7 @@ LAG(column_name, offset, default_value) OVER (PARTITION BY partition_column ORDE
 column_name：要获取值的列名。
 offset：表示要向上偏移的行数。例如，offset为1表示获取上一行的值，offset为2表示获取上两行的值，以此类推。
 default_value：可选参数，用于指定当没有前一行时的默认值。
-PARTITION BY和ORDER BY子句可选，用于分组和排序数据。
+PARTITION BY和ORDER BY子句可选，用于分组和排序数据。////over()必须有!!!!
 2）Lead 函数
 
 Lead 函数用于获取 当前行之后 的某一列的值。它可以帮助我们查看下一行的数据。
@@ -1153,7 +1153,7 @@ CHECK (P_Id>0)
 )
 ```
 
-DEFAULT 约束
+### DEFAULT 约束
 
 ```
 DEFAULT 约束用于向列中插入默认值。
@@ -1331,15 +1331,82 @@ SELECT ProductName,UnitPrice*(UnitsInStock+COALESCE(UnitsOnOrder,0))
 FROM Products
 ```
 
+# Part3 -- 函数
+
+## SQL Aggregate 函数
+
+```
+SQL Aggregate 函数计算从列中取得的值，返回一个单一的值。
+
+有用的 Aggregate 函数：
+
+AVG() - 返回平均值 SELECT AVG(column_name) FROM table_name
+COUNT() - 返回行数
+FIRST() - 返回第一个记录的值  就是limit1
+LAST() - 返回最后一个记录的值  就是Desc limit1
+MAX() - 返回最大值
+MIN() - 返回最小值
+SUM() - 返回总和
+```
+
+### COUNT() - 返回行数
+
+```
+SQL COUNT(column_name) 语法
+COUNT(column_name) 函数返回指定列的值的数目（NULL 不计入）：
+SELECT COUNT(column_name) FROM table_name;
+
+SQL COUNT(*) 语法
+COUNT(*) 函数返回表中的记录数：
+SELECT COUNT(*) FROM table_name;
+
+SQL COUNT(DISTINCT column_name) 语法
+COUNT(DISTINCT column_name) 函数返回指定列的不同值的数目：
+SELECT COUNT(DISTINCT column_name) FROM table_name;
+```
+
+## SQL Scalar 函数
+
+```
+SQL Scalar 函数基于输入值，返回一个单一的值。
+
+有用的 Scalar 函数：
+
+- UPPER() - 将某个字段转换为大写    SELECT UPPER(column_name) FROM table_name;
+- LOWER() - 将某个字段转换为小写    SELECT LOWER(column_name) FROM table_name;
+
+- MID() - 从某个文本字段提取字符，MySql 中使用   
+SELECT MID(name,1,4) AS ShortTitle FROM Websites;表示提取name中的1到4个字符
+    
+- LEN() - 返回某个文本字段的长度    SELECT LENGTH(column_name) FROM table_name;
+
+- ROUND() - 对某个数值字段进行指定小数位数的四舍五入
+SELECT ROUND(column_name,decimals) FROM TABLE_NAME; decimals可选表示留几位
+
+- NOW() - 返回当前的系统日期和时间    SELECT NOW() FROM table_name;
+- FORMAT() - 格式化某个字段的显示方式
+SELECT name, url, DATE_FORMAT(Now(),'%Y-%m-%d') AS dateFROM Websites; 2020-02-02格式
+```
 
 
 
+## GROUP BY 多表连接
 
+```
+SELECT Websites.name,COUNT(access_log.aid) AS nums FROM access_log
+LEFT JOIN Websites
+ON access_log.site_id=Websites.id
+GROUP BY Websites.name;
+```
 
+## EXISTS 运算符
 
+```
+EXISTS 运算符用于判断查询子句是否有记录，如果有一条或多条记录存在返回 True，否则返回 False。
 
-
-
-
-
-
+SQL EXISTS 语法:
+SELECT column_name(s)
+FROM table_name
+WHERE EXISTS
+(SELECT column_name FROM table_name WHERE condition);
+```

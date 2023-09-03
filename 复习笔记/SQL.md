@@ -1,3 +1,5 @@
+# Part1 -- 重点
+
 # 基础语法 - 查询 - 全表查询
 
 ```
@@ -68,6 +70,9 @@ select name, age, salary from employees where salary > 5500;
 
 -- SQL查询语句
 select name, age, salary from employees where age between 25 and 30;
+
+4)指定针对某个列的多个可能值
+SELECT * FROM student WHERE name IN ('张三','李四')
 ```
 
 # 基础语法 - 条件查询 - 空值
@@ -206,6 +211,37 @@ CASE WHEN (条件1) THEN 结果1
 返回结果应包含学生的姓名（name）和年龄等级（age_level），并按姓名升序排序。
 SELECT name, CASE WHEN (age > 60) THEN '老同学' WHEN (age > 20) THEN '年轻' ELSE '小同学' END AS age_level FROM student ORDER BY name asc;
 ```
+
+### 行转成列
+
+```
+张三	语文	58
+张三	数学	59
+张三	英语	68
+李四	语文	78
+李四	数学	98
+李四	英语	56
+王五	语文	58
+王五	数学	54
+王五	英语	53
+
+SELECT
+	name,
+	sum(CASE subject WHEN '语文' THEN score ELSE 0 END) AS '语文',
+	sum(CASE subject WHEN '数学' THEN score ELSE 0 END) AS '数学',
+	sum(CASE subject WHEN '英语' THEN score ELSE 0 END) AS '英语',
+	sum(score) AS total_score
+FROM
+	student
+GROUP BY
+	name
+	
+张三	58	59	68	185
+李四	78	98	56	232
+王五	58	54	53	165
+```
+
+
 
 # 函数 - 时间函数
 
@@ -388,7 +424,7 @@ A002	200
 SELECT class_id, SUM(score) AS total_score FROM student GROUP BY class_id HAVING SUM(score) > 150;
 ```
 
-# 查询进阶 - 关联查询 - cross join
+# 查询进阶 - 关联查询 - cross join 笛卡尔积
 
 ```
 在 SQL 中，关联查询是一种用于联合多个数据表中的数据的查询方式。
@@ -544,9 +580,756 @@ Bob	350
 Charlie	500
 ```
 
+# 查询进阶 - 子查询 - exists
+
+```
+子查询中的一种特殊类型是 "exists" 子查询，用于检查主查询的结果集是否存在满足条件的记录，它返回布尔值（True 或 False），而不返回实际的数据。
+
+假设我们有以下两个数据表：orders 和 customers，分别包含订单信息和客户信息。
+
+orders 表：
+order_id	customer_id	order_date	total_amount
+1	101	2023-01-01	200
+2	102	2023-01-05	350
+3	101	2023-01-10	120
+4	103	2023-01-15	500
+
+customers 表：
+customer_id	name	city
+101	Alice	New York
+102	Bob	Los Angeles
+103	Charlie	Chicago
+104	赵二	China
+
+现在，我们希望查询出 存在订单的 客户姓名和订单金额。
+使用 exists 子查询的方式，SQL 代码如下：
+
+-- 主查询
+SELECT name, total_amount
+FROM customers
+WHERE EXISTS (
+    -- 子查询
+    SELECT 1
+    FROM orders
+    WHERE orders.customer_id = customers.customer_id
+);
+上述语句中，先遍历客户信息表的每一行，获取到客户编号；然后执行子查询，从订单表中查找该客户编号是否存在，如果存在则返回结果。
+
+查询结果如下：
+
+name	total_amount
+Alice	200
+Bob	350
+Charlie	500
+和 exists 相对的是 not exists，用于查找不满足存在条件的记录。
+```
+
+# 查询进阶 - 组合查询
+
+```
+在 SQL 中，组合查询是一种将多个 SELECT 查询结果合并在一起的查询操作。
+
+包括两种常见的组合查询操作：UNION 和 UNION ALL。
+
+UNION 操作：它用于将两个或多个查询的结果集合并， 并去除重复的行 。即如果两个查询的结果有相同的行，则只保留一行。
+
+UNION ALL 操作：它也用于将两个或多个查询的结果集合并， 但不去除重复的行 。即如果两个查询的结果有相同的行，则全部保留。
+
+假设我们有以下两个数据表：table1 和 table2，分别包含不同部门的员工信息。
+
+table1 表：
+emp_id	name	age	department
+101	Alice	25	HR
+102	Bob	28	Finance
+103	Charlie	22	IT
+
+table2 表：
+emp_id	name	age	department
+101	Alice	25	HR
+201	David	27	Finance
+202	Eve	24	HR
+203	Frank	26	IT
+
+现在，我们想要合并这两张表的数据，分别执行 UNION 操作和 UNION ALL 操作。
+
+UNION 操作：
+SELECT name, age, department
+FROM table1
+UNION
+SELECT name, age, department
+FROM table2;
+UNION 操作的结果，去除了重复的行（名称为 Alice）：
+
+name	age	department
+Alice	25	HR
+Bob	28	Finance
+Charlie	22	IT
+David	27	Finance
+Eve	24	HR
+Frank	26	IT
 
 
+-- UNION ALL操作
+SELECT name, age, department
+FROM table1
+UNION ALL
+SELECT name, age, department
+FROM table2;
+结果如下，保留了重复的行：
+name	age	department
+Alice	25	HR
+Bob	28	Finance
+Charlie	22	IT
+Alice	25	HR
+David	27	Finance
+Eve	24	HR
+Frank	26	IT
+```
 
+# 查询进阶 - 开窗函数 - sum over
+
+```
+在 SQL 中，开窗函数是一种强大的查询工具，它允许我们在查询中进行对分组数据进行计算、 同时保留原始行的详细信息 。
+
+开窗函数可以与聚合函数（如 SUM、AVG、COUNT 等）结合使用，但与普通聚合函数不同，开窗函数不会导致结果集的行数减少。
+
+打个比方，可以将开窗函数想象成一种 "透视镜"，它能够将我们聚焦在某个特定的分组，同时还能看到整体的全景。
+
+假设我们有订单表 orders，表格数据如下：
+order_id	customer_id	order_date	total_amount
+1	101	2023-01-01	200
+2	102	2023-01-05	350
+3	101	2023-01-10	120
+4	103	2023-01-15	500
+现在，我们希望计算每个客户的订单总金额，并显示每个订单的详细信息。
+
+示例 SQL 如下：
+
+SELECT 
+    order_id, 
+    customer_id, 
+    order_date, 
+    total_amount,
+    SUM(total_amount) OVER (PARTITION BY customer_id) AS customer_total_amount
+FROM
+    orders;
+查询结果：
+
+order_id	customer_id	order_date	total_amount	customer_total_amount
+1	101	2023-01-01	200	320
+3	101	2023-01-10	120	320
+2	102	2023-01-05	350	350
+4	103	2023-01-15	500	500
+在上面的示例中，我们使用开窗函数 SUM 来计算每个客户的订单总金额（customer_total_amount），并使用 PARTITION BY 子句按照customer_id 进行分组。从前两行可以看到，开窗函数保留了原始订单的详细信息，同时计算了每个客户的订单总金额。
+```
+
+# 查询进阶 - 开窗函数 - sum over order by
+
+```
+sum over 函数的另一种用法：sum over order by，可以实现同组内数据的 累加求和 
+
+举一个应用场景：老师在每个班级里依次点名，每点到一个学生，老师都会记录当前已点到的学生们的分数总和
+
+假设我们有订单表 orders，表格数据如下：
+
+order_id	customer_id	order_date	total_amount
+1	101	2023-01-01	200
+2	102	2023-01-05	350
+3	101	2023-01-10	120
+4	103	2023-01-15	500
+现在，我们希望计算每个客户的历史订单累计金额，并显示每个订单的详细信息。
+
+SELECT 
+    order_id, 
+    customer_id, 
+    order_date, 
+    total_amount,
+    SUM(total_amount) OVER (PARTITION BY customer_id ORDER BY order_date ASC) AS cumulative_total_amount
+FROM
+    orders;
+    
+结果将是：
+order_id	customer_id	order_date	total_amount	cumulative_total_amount
+1	101	2023-01-01	200	200
+3	101	2023-01-10	120	320
+2	102	2023-01-05	350	350
+4	103	2023-01-15	500	500
+
+在上面的示例中，我们使用开窗函数 SUM 来计算每个客户的历史订单累计金额（cumulative_total_amount），并使用 PARTITION BY 子句按照 customer_id 进行分组，并使用 ORDER BY 子句按照 order_date 进行排序。从结果的前两行可以看到，开窗函数保留了原始订单的详细信息，同时计算了每个客户的历史订单累计金额；相比于只用 sum over，同组内的累加列名称
+```
+
+# 查询进阶 - 开窗函数 - rank 不唯一的排名
+
+```
+Rank 开窗函数是 SQL 中一种用于对查询结果集中的行进行 排名 的开窗函数。它可以根据指定的列或表达式对结果集中的行进行排序，并为每一行分配一个排名。在排名过程中，相同的值将被赋予相同的排名，而不同的值将被赋予不同的排名。
+
+Rank 开窗函数的常见用法是在查询结果中查找前几名（Top N）或排名最高的行。
+
+Rank 开窗函数的语法如下：
+
+RANK() OVER (
+  PARTITION BY 列名1, 列名2, ... -- 可选，用于指定分组列
+  ORDER BY 列名3 [ASC|DESC], 列名4 [ASC|DESC], ... -- 用于指定排序列及排序方式
+) AS rank_column
+
+其中，PARTITION BY 子句可选，用于指定分组列，将结果集按照指定列进行分组；ORDER BY 子句用于指定排序列及排序方式，决定了计算 Rank 时的排序规则。AS rank_column 用于指定生成的 Rank 排名列的别名。
+
+
+假设我们有订单表 orders，表格数据如下：
+
+order_id	customer_id	order_date	total_amount
+1	101	2023-01-01	200
+2	102	2023-01-05	350
+3	101	2023-01-10	120
+4	103	2023-01-15	500
+现在，我们希望为每个客户的订单按照订单金额降序排名，并显示每个订单的详细信息。
+
+SELECT 
+    order_id, 
+    customer_id, 
+    order_date, 
+    total_amount,
+    RANK() OVER (PARTITION BY customer_id ORDER BY total_amount DESC) AS customer_rank
+FROM
+    orders;
+查询结果：
+
+order_id	customer_id	order_date	total_amount	customer_rank
+1	101	2023-01-01	200	1
+3	101	2023-01-10	120	2
+2	102	2023-01-05	350	1
+4	103	2023-01-15	500	1
+在上面的示例中，我们使用开窗函数 RANK 来为每个客户的订单按照订单金额降序排名（customer_rank），并使用 PARTITION BY 子句按照 customer_id 进行分组，并使用 ORDER BY 子句按照 total_amount 从大到小进行排序。
+
+可以看到，开窗函数保留了原始订单的详细信息，同时计算了每个客户的订单金额排名。
+```
+
+# 查询进阶 - 开窗函数 - row_number 唯一的排名
+
+```
+Row_Number 开窗函数是 SQL 中的一种用于为查询结果集中的每一行 分配唯一连续排名 的开窗函数。
+
+它与之前讲到的 Rank 函数，Row_Number 函数为每一行都分配一个唯一的整数值，不管是否存在并列（相同排序值）的情况。每一行都有一个唯一的行号，从 1 开始连续递增。
+
+比如说rank()是 1 1 3 4 4 6, row_number()就是1 2 3 4 5 6
+```
+
+![image-20230903140957143](C:\Users\Jinpeng\AppData\Roaming\Typora\typora-user-images\image-20230903140957143.png)
+
+# 查询进阶 - 开窗函数 - lag / lead
+
+```
+开窗函数 Lag 和 Lead 的作用是获取在当前行之前或之后的行的值，这两个函数通常在需要比较相邻行数据或进行时间序列分析时非常有用。
+
+1）Lag 函数
+
+Lag 函数用于获取 当前行之前 的某一列的值。它可以帮助我们查看上一行的数据。
+
+Lag 函数的语法如下：
+
+LAG(column_name, offset, default_value) OVER (PARTITION BY partition_column ORDER BY sort_column)
+参数解释：
+
+column_name：要获取值的列名。
+offset：表示要向上偏移的行数。例如，offset为1表示获取上一行的值，offset为2表示获取上两行的值，以此类推。
+default_value：可选参数，用于指定当没有前一行时的默认值。
+PARTITION BY和ORDER BY子句可选，用于分组和排序数据。
+2）Lead 函数
+
+Lead 函数用于获取 当前行之后 的某一列的值。它可以帮助我们查看下一行的数据。
+
+Lead 函数的语法如下：
+
+LEAD(column_name, offset, default_value) OVER (PARTITION BY partition_column ORDER BY sort_column)
+参数解释：
+
+column_name：要获取值的列名。
+offset：表示要向下偏移的行数。例如，offset为1表示获取下一行的值，offset为2表示获取下两行的值，以此类推。
+default_value：可选参数，用于指定当没有后一行时的默认值。
+PARTITION BY和ORDER BY子句可选，用于分组和排序数据。
+
+
+以下是一个示例，假设我们有一个学生成绩表scores，其中包含学生的成绩和考试日期：
+student_id	exam_date	score
+101	2023-01-01	85
+101	2023-01-05	78
+101	2023-01-10	92
+101	2023-01-15	80
+现在我们想要查询每个学生的考试日期和上一次考试的成绩，以及下一次考试的成绩，示例 SQL 如下：
+
+SELECT 
+    student_id,
+    exam_date,
+    score,
+    LAG(score, 1, NULL) OVER (PARTITION BY student_id ORDER BY exam_date) AS previous_score,
+    LEAD(score, 1, NULL) OVER (PARTITION BY student_id ORDER BY exam_date) AS next_score
+FROM
+    scores;
+结果将是：
+
+student_id	exam_date	score	previous_score	next_score
+101	        2023-01-01	 85	           NULL	      78
+101	        2023-01-05	 78	           85	      92
+101	        2023-01-10	 92	           78	      80
+101      	2023-01-15	 80	           92	      NULL
+在上面的示例中，我们使用 Lag 函数获取每个学生的上一次考试成绩（previous_score），使用 Lead 函数获取每个学生的下一次考试成绩（next_score）。如果没有上一次或下一次考试，对应的列将显示为 NULL。
+```
+
+# Part2 -- 查缺补漏
+
+## INSERT INTO 语句
+
+```
+INSERT INTO 语句可以有两种编写形式。
+
+第一种形式无需指定要插入数据的列名，只需提供被插入的值即可：
+
+INSERT INTO table_name
+VALUES (value1,value2,value3,...);
+第二种形式需要指定列名及被插入的值：
+
+INSERT INTO table_name (column1,column2,column3,...)
+VALUES (value1,value2,value3,...);
+```
+
+## UPDATE 语句
+
+```
+SQL UPDATE 语句
+UPDATE 语句用于更新表中已存在的记录。
+
+SQL UPDATE 语法
+UPDATE table_name
+SET column1 = value1, column2 = value2, ...
+WHERE condition;
+
+
+Update 警告！
+在更新记录时要格外小心！在上面的实例中，如果我们省略了 WHERE 子句，如下所示：
+
+UPDATE Websites
+SET alexa='5000', country='USA'
+执行以上代码会将 Websites 表中所有数据的 alexa 改为 5000，country 改为 USA。
+
+执行没有 WHERE 子句的 UPDATE 要慎重，再慎重。
+
+在 MySQL 中可以通过设置 sql_safe_updates 这个自带的参数来解决，当该参数开启的情况下，你必须在update 语句后携带 where 条件，否则就会报错。
+set sql_safe_updates=1; 表示开启该参数
+```
+
+## DELETE 语句
+
+```
+DELETE 语句用于删除表中的行。
+
+SQL DELETE 语法
+DELETE FROM table_name
+WHERE condition;
+
+
+删除所有数据
+您可以在不删除表的情况下，删除表中所有的行。这意味着表结构、属性、索引将保持不变：
+
+DELETE FROM table_name;
+```
+
+## SELECT TOP, LIMIT, ROWNUM 子句
+
+```
+SQL Server / MS Access 语法
+SELECT TOP number|percent column_name(s)
+FROM table_name;
+
+变相返回后 N 行:
+--前5行
+select top 5 * from table
+--后5行
+select top 5 * from table order by id desc  --desc 表示降序排列 asc 表示升序
+
+MySQL 语法
+SELECT column_name(s)
+FROM table_name
+LIMIT number;
+
+Oracle 语法
+SELECT column_name(s)
+FROM table_name
+WHERE ROWNUM <= number;
+```
+
+## SQL 通配符
+
+```
+通配符	                        描述
+%	                      替代 0 个或多个字符
+_	                      替代一个字符
+[charlist]	              字符列中的任何单一字符
+[^charlist]或[!charlist]	 不在字符列中的任何单一字符
+
+MySQL 中使用 REGEXP 或 NOT REGEXP 运算符 (或 RLIKE 和 NOT RLIKE) 来操作正则表达式。
+
+下面的 SQL 语句选取 name 以 "G"、"F" 或 "s" 开始的所有网站：
+SELECT * FROM Websites WHERE name REGEXP '^[GFs]';
+
+下面的 SQL 语句选取 name 以 A 到 H 字母开头的网站：
+SELECT * FROM Websites WHERE name REGEXP '^[A-H]';
+
+下面的 SQL 语句选取 name 不以 A 到 H 字母开头的网站：
+SELECT * FROM WebsitesWHERE name REGEXP '^[^A-H]';
+```
+
+## BETWEEN 操作符
+
+```
+带有文本值的 BETWEEN 操作符实例
+
+下面的 SQL 语句选取 name 以介于 'A' 和 'H' 之间字母开始的所有网站：
+SELECT * FROM WebsitesWHERE name BETWEEN 'A' AND 'H'; (name里的字母都要在A-H之间)
+```
+
+## FULL OUTER JOIN 关键字 MySQL中不支持 FULL OUTER JOIN
+
+```
+FULL OUTER JOIN 关键字结合了 LEFT JOIN 和 RIGHT JOIN 的结果。
+
+SELECT column_name(s)
+FROM table1
+FULL OUTER JOIN table2
+ON table1.column_name=table2.column_name;
+```
+
+## UNION 操作符
+
+```
+UNION 只会选取不同的值。请使用 UNION ALL 来选取重复的值！
+
+SELECT country, name FROM Websites WHERE country='CN'
+UNION ALL
+SELECT country, app_name FROM apps WHERE country='CN'ORDER BY country;
+name做为第二列名
+```
+
+## SQL 拷贝
+
+```
+1. 复制表结构及其数据：
+create table table_name_new as select * from table_name_old
+
+2. 只复制表结构：
+create table table_name_new as select * from table_name_old where 1=2;
+或者：
+create table table_name_new like table_name_old
+
+3. 只复制表数据：
+如果两个表结构一样：
+insert into table_name_new select * from table_name_old
+
+如果两个表结构不一样：
+insert into table_name_new(column1,column2...) select column1,column2... from table_name_old
+```
+
+## SQL 约束（Constraints）
+
+```
+SQL CREATE TABLE + CONSTRAINT 语法
+CREATE TABLE table_name
+(
+column_name1 data_type(size) constraint_name,
+column_name2 data_type(size) constraint_name,
+column_name3 data_type(size) constraint_name,
+....
+);
+
+NOT NULL - 指示某列不能存储 NULL 值。
+UNIQUE - 保证某列的每行必须有唯一的值。
+PRIMARY KEY - NOT NULL 和 UNIQUE 的结合。确保某列（或两个列多个列的结合）有唯一标识，有助于更容易更快速地找到表中的一个特定的记录。
+FOREIGN KEY - 保证一个表中的数据匹配另一个表中的值的参照完整性。
+CHECK - 保证列中的值符合指定的条件。
+DEFAULT - 规定没有给列赋值时的默认值。
+```
+
+### NOT NULL 约束
+
+```
+NOT NULL 约束强制列不接受 NULL 值。
+
+添加 NOT NULL 约束
+在一个已创建的表的 "Age" 字段中添加 NOT NULL 约束如下所示：
+实例
+ALTER TABLE Persons
+MODIFY Age int NOT NULL;
+
+删除 NOT NULL 约束
+在一个已创建的表的 "Age" 字段中删除 NOT NULL 约束如下所示：
+实例
+ALTER TABLE Persons
+MODIFY Age int NULL;
+```
+
+### UNIQUE 约束
+
+```
+UNIQUE 约束唯一标识数据库表中的每条记录。
+
+UNIQUE 和 PRIMARY KEY 约束均为列或列集合提供了唯一性的保证。
+
+PRIMARY KEY 约束拥有自动定义的 UNIQUE 约束。
+
+请注意，每个表可以有多个 UNIQUE 约束，但是每个表只能有一个 PRIMARY KEY 约束。
+
+MySQL：
+
+CREATE TABLE Persons
+(
+P_Id int NOT NULL,
+LastName varchar(255) NOT NULL,
+FirstName varchar(255),
+Address varchar(255),
+City varchar(255),
+UNIQUE (P_Id)
+)
+```
+
+### PRIMARY KEY 约束
+
+```
+PRIMARY KEY 约束唯一标识数据库表中的每条记录。
+
+主键必须包含唯一的值。
+
+主键列不能包含 NULL 值。
+
+每个表都应该有一个主键，并且每个表只能有一个主键。
+
+MySQL：
+
+CREATE TABLE Persons
+(
+P_Id int NOT NULL,
+LastName varchar(255) NOT NULL,
+FirstName varchar(255),
+Address varchar(255),
+City varchar(255),
+PRIMARY KEY (P_Id)
+)
+```
+
+### FOREIGN KEY 约束
+
+```
+FOREIGN KEY 约束用于预防破坏表之间连接的行为。
+
+FOREIGN KEY 约束也能防止非法数据插入外键列，因为它必须是它指向的那个表中的值之一。
+
+MySQL：
+
+CREATE TABLE Orders
+(
+O_Id int NOT NULL,
+OrderNo int NOT NULL,
+P_Id int,
+PRIMARY KEY (O_Id),
+FOREIGN KEY (P_Id) REFERENCES Persons(P_Id)
+)
+```
+
+### CHECK 约束
+
+```
+CHECK 约束用于限制列中的值的范围。
+
+如果对单个列定义 CHECK 约束，那么该列只允许特定的值。
+
+如果对一个表定义 CHECK 约束，那么此约束会基于行中其他列的值在特定的列中对值进行限制。
+
+CREATE TABLE Persons
+(
+P_Id int NOT NULL,
+LastName varchar(255) NOT NULL,
+FirstName varchar(255),
+Address varchar(255),
+City varchar(255),
+CHECK (P_Id>0)
+)
+```
+
+DEFAULT 约束
+
+```
+DEFAULT 约束用于向列中插入默认值。
+
+如果没有规定其他的值，那么会将默认值添加到所有的新记录。
+
+CREATE TABLE Persons
+(
+    P_Id int NOT NULL,
+    LastName varchar(255) NOT NULL,
+    FirstName varchar(255),
+    Address varchar(255),
+    City varchar(255) DEFAULT 'Sandnes'
+)
+
+当表已被创建时，如需在 "City" 列创建 DEFAULT 约束，请使用下面的 SQL：
+MySQL：
+ALTER TABLE Persons
+ALTER City SET DEFAULT 'SANDNES'
+
+如需撤销 DEFAULT 约束，请使用下面的 SQL：
+MySQL：
+ALTER TABLE Persons
+ALTER City DROP DEFAULT
+```
+
+## CREATE INDEX
+
+```
+CREATE INDEX 语句用于在表中创建索引。
+
+在不读取整个表的情况下，索引使数据库应用程序可以更快地查找数据。
+
+SQL CREATE INDEX 语法
+在表上创建一个简单的索引。允许使用重复的值：
+CREATE INDEX index_name
+ON table_name (column_name)
+
+SQL CREATE UNIQUE INDEX 语法
+在表上创建一个唯一的索引。不允许使用重复的值：唯一的索引意味着两个行不能拥有相同的索引值。
+CREATE UNIQUE INDEX index_name
+ON table_name (column_name)
+注释：用于创建索引的语法在不同的数据库中不一样。因此，检查您的数据库中创建索引的语法。
+
+下面的 SQL 语句在 "Persons" 表的 "LastName" 列上创建一个名为 "PIndex" 的索引：
+CREATE INDEX PIndex
+ON Persons (LastName)
+```
+
+## SQL 撤销索引、撤销表以及撤销数据库
+
+```
+DROP INDEX 语句用于删除表中的索引。
+用于 MySQL 的 DROP INDEX 语法：
+ALTER TABLE table_name DROP INDEX index_name
+
+DROP TABLE 语句
+DROP TABLE 语句用于删除表。
+DROP TABLE table_name
+
+DROP DATABASE 语句
+DROP DATABASE 语句用于删除数据库。
+DROP DATABASE database_name
+
+TRUNCATE TABLE 语句
+如果我们仅仅需要删除表内的数据，但并不删除表本身，那么我们该如何做呢？
+请使用 TRUNCATE TABLE 语句：
+TRUNCATE TABLE table_name
+```
+
+## ALTER TABLE 语句
+
+```
+ALTER TABLE 语句用于在已有的表中添加、删除或修改列。
+
+如需在表中添加列，请使用下面的语法:
+ALTER TABLE table_name
+ADD column_name datatype
+
+如需删除表中的列，请使用下面的语法（请注意，某些数据库系统不允许这种在数据库表中删除列的方式）：
+ALTER TABLE table_name
+DROP COLUMN column_name
+
+要改变表中列的数据类型，请使用下面的语法：
+ALTER TABLE table_name
+MODIFY COLUMN column_name datatype
+```
+
+## AUTO INCREMENT 字段
+
+```
+下面的 SQL 语句把 "Persons" 表中的 "ID" 列定义为 auto-increment 主键字段：
+
+CREATE TABLE Persons
+(
+ID int NOT NULL AUTO_INCREMENT,
+LastName varchar(255) NOT NULL,
+FirstName varchar(255),
+Address varchar(255),
+City varchar(255),
+PRIMARY KEY (ID)
+)
+
+MySQL 使用 AUTO_INCREMENT 关键字来执行 auto-increment 任务。
+默认地，AUTO_INCREMENT 的开始值是 1，每条新记录递增 1。
+
+要让 AUTO_INCREMENT 序列以其他的值起始，请使用下面的 SQL 语法：
+ALTER TABLE Persons AUTO_INCREMENT=100
+```
+
+## SQL Date 函数
+
+```
+SELECT NOW(),CURDATE(),CURTIME()
+
+DATE(date) date 参数是合法的日期表达式。
+
+DATE_FORMAT(date,format) date 参数是合法的日期。format 规定日期/时间的输出格式。
+下面的脚本使用 DATE_FORMAT() 函数来显示不同的格式。我们使用 NOW() 来获得当前的日期/时间：
+DATE_FORMAT(NOW(),'%b %d %Y %h:%i %p')
+DATE_FORMAT(NOW(),'%m-%d-%Y')
+DATE_FORMAT(NOW(),'%d %b %y')
+DATE_FORMAT(NOW(),'%d %b %Y %T:%f')
+
+结果如下所示：
+Nov 04 2008 11:45 PM
+11-04-2008
+04 Nov 08
+04 Nov 2008 11:45:34:243
+
+%a	缩写星期名
+%b	缩写月名
+%c	月，数值
+%D	带有英文前缀的月中的天
+%d	月的天，数值（00-31）
+%e	月的天，数值（0-31）
+%f	微秒
+%H	小时（00-23）
+%h	小时（01-12）
+%I	小时（01-12）
+%i	分钟，数值（00-59）
+%j	年的天（001-366）
+%k	小时（0-23）
+%l	小时（1-12）
+%M	月名
+%m	月，数值（00-12）
+%p	AM 或 PM
+%r	时间，12-小时（hh:mm:ss AM 或 PM）
+%S	秒（00-59）
+%s	秒（00-59）
+%T	时间, 24-小时（hh:mm:ss）
+%U	周（00-53）星期日是一周的第一天
+%u	周（00-53）星期一是一周的第一天
+%V	周（01-53）星期日是一周的第一天，与 %X 使用
+%v	周（01-53）星期一是一周的第一天，与 %x 使用
+%W	星期名
+%w	周的天（0=星期日, 6=星期六）
+%X	年，其中的星期日是周的第一天，4 位，与 %V 使用
+%x	年，其中的星期一是周的第一天，4 位，与 %v 使用
+%Y	年，4 位
+%y	年，2 位
+```
+
+## IFNULL()
+
+```
+MySQL 也拥有类似 ISNULL() 的函数。不过它的工作方式与微软的 ISNULL() 函数有点不同。
+
+在 MySQL 中，我们可以使用 IFNULL() 函数，如下所示：
+SELECT ProductName,UnitPrice*(UnitsInStock+IFNULL(UnitsOnOrder,0))
+FROM Products
+
+或者我们可以使用 COALESCE() 函数，如下所示：
+SELECT ProductName,UnitPrice*(UnitsInStock+COALESCE(UnitsOnOrder,0))
+FROM Products
+```
 
 
 

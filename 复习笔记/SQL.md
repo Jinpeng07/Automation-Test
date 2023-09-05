@@ -1203,6 +1203,9 @@ ON table_name (column_name)
 下面的 SQL 语句在 "Persons" 表的 "LastName" 列上创建一个名为 "PIndex" 的索引：
 CREATE INDEX PIndex
 ON Persons (LastName)
+
+alter table actor add unique index uniq_idx_firstname(first_name);
+alter table actor add index idx_lastname(last_name);
 ```
 
 ## SQL 撤销索引、撤销表以及撤销数据库
@@ -1389,8 +1392,6 @@ SELECT ROUND(column_name,decimals) FROM TABLE_NAME; decimals可选表示留几�
 - FORMAT() - 格式化某个字段的显示方式
 SELECT name, url, DATE_FORMAT(Now(),'%Y-%m-%d') AS dateFROM Websites; 2020-02-02格式
 ```
-
-
 
 ## GROUP BY 多表连接
 

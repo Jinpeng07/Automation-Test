@@ -123,15 +123,32 @@ values
     (2, 'NICK', 'WAHLBERG', '2006-02-15 12:34:33')
 ```
 
+**SQL229 批量插入数据，不使用replace操作**
 
+```
+# mysql中常用的三种插入数据的语句: 
+# insert into表示插入数据，数据库会检查主键，如果出现重复会报错； 
+# replace into表示插入替换数据，需求表中有PrimaryKey，
+#             或者unique索引，如果数据库已经存在数据，则用新数据替换，如果没有数据效果则和insert into一样； 
+# insert ignore表示，如果中已经存在相同的记录，则忽略当前新数据；
+insert ignore into actor values("3","ED","CHASE","2006-02-15 12:34:33");
+```
 
+**SQL232** **针对actor表创建视图actor_name_view**
 
+```
+方法一：
+create view actor_name_view as
+select first_name as first_name_v, last_name as last_name_v
+from actor
 
+方法二：直接在视图名的后面用小括号创建视图中的字段名
+create view actor_name_view(first_name_v, last_name_v) as
+select first_name, last_name
+from actor
+```
 
-
-
-
-
+![image-20230905205359841](C:\Users\Jinpeng\AppData\Roaming\Typora\typora-user-images\image-20230905205359841.png)
 
 
 

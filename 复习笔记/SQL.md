@@ -1133,6 +1133,9 @@ P_Id int,
 PRIMARY KEY (O_Id),
 FOREIGN KEY (P_Id) REFERENCES Persons(P_Id)
 )
+
+
+alter table audit add foreign key (EMP_no) references employees_test (ID);
 ```
 
 ### CHECK 约束
@@ -1236,7 +1239,8 @@ ALTER TABLE 语句用于在已有的表中添加、删除或修改列。
 
 如需在表中添加列，请使用下面的语法:
 ALTER TABLE table_name
-ADD column_name datatype
+ADD COLUMN column_name datatype
+ALTER TABLE actor ADD column create_date datetime NOT NULL  DEFAULT '2020-10-01 00:00:00' after last_update
 
 如需删除表中的列，请使用下面的语法（请注意，某些数据库系统不允许这种在数据库表中删除列的方式）：
 ALTER TABLE table_name

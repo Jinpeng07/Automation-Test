@@ -150,6 +150,63 @@ from actor
 
 ![image-20230905205359841](C:\Users\Jinpeng\AppData\Roaming\Typora\typora-user-images\image-20230905205359841.png)
 
+**SQL233** **针对上面的salaries表emp_no字段创建索引idx_emp_no**
+
+```
+使用强制索引
+select * from salaries force index(idx_emp_no ) where emp_no=10005
+```
+
+**SQL238** **将id=5以及emp_no=10001的行数据替换成id=5以及emp_no=10005**
+
+```
+使用replace替换记录的语句为 replace(字段，旧内容，新内容)
+结合update使用：
+update titles_test
+set emp_no=replace(emp_no,10001,10005)
+where id=5;
+```
+
+**修改表名**
+
+```
+alter table titles_test rename titles_2017
+```
+
+**SQL244** **将employees表中的所有员工的last_name和first_name通过单引号连接起来**
+
+```
+方式一
+select concat(last_name,'\'',first_name) from employees
+方式二
+select concat(last_name,"'",first_name) from employees
+```
+
+**SQL245** **查找字符串中逗号出现的次数**
+
+```
+select id,length(string)-length(replace(string,",","")) from strings;
+
+SELECT
+    id,
+    length(
+        regexp_replace(STRING, '[A-Z0-9]', '')
+    )
+FROM
+    strings;
+```
+
+**SQL246** **获取employees中的first_name**
+
+```
+本题考查 substr(X,Y,Z) 或 substr(X,Y) 函数的使用。其中**X是要截取的字符串**。**Y是字符串的起始位置**（注意第一个字符的位置为1，而不为0），取值范围是±(1~length(X))，当Y等于length(X)时，则截取最后一个字符；当Y等于负整数-n时，则从倒数第n个字符处截取。**Z是要截取字符串的长度**，取值范围是正整数，若Z省略，则从Y处一直截取到字符串末尾；若Z大于剩下的字符串长度，也是截取到字符串末尾为止。
+
+SELECT first_name FROM employees ORDER BY substr(first_name,length(first_name)-1) 
+SELECT first_name FROM employees ORDER BY substr(first_name,-2) 
+```
+
+
+
 
 
 

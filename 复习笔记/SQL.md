@@ -811,9 +811,9 @@ Row_Number 开窗函数是 SQL 中的一种用于为查询结果集中的每一�
 
 它与之前讲到的 Rank 函数，Row_Number 函数为每一行都分配一个唯一的整数值，不管是否存在并列（相同排序值）的情况。每一行都有一个唯一的行号，从 1 开始连续递增。
 
-比如说rank()是 1 1 3 4 4 6, 
-row_number()就是1 2 3 4 5 6,
-dense_rank() 就是 1 1 2 3 3 4
+比如说rank()是 1 1 3 4 4 6, 不唯一要跳过
+row_number()就是1 2 3 4 5 6, 唯一
+dense_rank() 就是 1 1 2 3 3 4 不唯一不跳过
 ```
 
 ![image-20230903140957143](C:\Users\Jinpeng\AppData\Roaming\Typora\typora-user-images\image-20230903140957143.png)
@@ -933,30 +933,6 @@ WHERE condition;
 您可以在不删除表的情况下，删除表中所有的行。这意味着表结构、属性、索引将保持不变：
 
 DELETE FROM table_name;
-```
-
-## SELECT TOP, LIMIT, ROWNUM 子句
-
-```
-SQL Server / MS Access 语法
-SELECT TOP number|percent column_name(s)
-FROM table_name;
-
-变相返回后 N 行:
---前5行
-select top 5 * from table
---后5行
-select top 5 * from table order by id desc  --desc 表示降序排列 asc 表示升序
-
-MySQL 语法
-SELECT column_name(s)
-FROM table_name
-LIMIT number;
-
-Oracle 语法
-SELECT column_name(s)
-FROM table_name
-WHERE ROWNUM <= number;
 ```
 
 ## SQL 通配符
@@ -1351,8 +1327,8 @@ SQL Aggregate 函数计算从列中取得的值，返回一个单一的值。
 
 AVG() - 返回平均值 SELECT AVG(column_name) FROM table_name
 COUNT() - 返回行数
-FIRST() - 返回第一个记录的值  就是limit1
-LAST() - 返回最后一个记录的值  就是Desc limit1
+FIRST() - 返回第一个记录的值  就是limit 1
+LAST() - 返回最后一个记录的值  就是Desc limit 1
 MAX() - 返回最大值
 MIN() - 返回最小值
 SUM() - 返回总和

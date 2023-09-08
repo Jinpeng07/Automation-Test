@@ -182,7 +182,7 @@ select concat(last_name,"'",first_name) from employees
 
 **SQL245** **查找字符串中逗号出现的次数**
 
-```
+```sql
 select id,length(string)-length(replace(string,",","")) from strings;
 
 SELECT
@@ -196,26 +196,87 @@ FROM
 
 **SQL246** **获取employees中的first_name**
 
-```
+```sql
 本题考查 substr(X,Y,Z) 或 substr(X,Y) 函数的使用。其中**X是要截取的字符串**。**Y是字符串的起始位置**（注意第一个字符的位置为1，而不为0），取值范围是±(1~length(X))，当Y等于length(X)时，则截取最后一个字符；当Y等于负整数-n时，则从倒数第n个字符处截取。**Z是要截取字符串的长度**，取值范围是正整数，若Z省略，则从Y处一直截取到字符串末尾；若Z大于剩下的字符串长度，也是截取到字符串末尾为止。
 
 SELECT first_name FROM employees ORDER BY substr(first_name,length(first_name)-1) 
 SELECT first_name FROM employees ORDER BY substr(first_name,-2) 
 ```
 
+**SQL247** **按照dept_no进行汇总**
 
+```sql
+聚合函数group_concat（X，Y），其中X是要连接的字段，Y是连接时用的符号，可省略，默认为逗号。
+此函数必须与GROUP BY配合使用。此题以dept_no作为分组，将每个分组中不同的emp_no用逗号连接起来（即可省略Y）。
 
+SELECT dept_no,group_concat(emp_no) as employees
+FROM dept_emp GROUP BY dept_no
+```
 
+**SQL249** **分页查询employees表，每5行一页，返回第2页的数据**
 
+```sql
+根据题意，每行5页，返回第2页的数据，即返回第6~10条记录，以下有两种方法可以解决：
+方法一：利用 LIMIT 和 OFFSET 关键字。LIMIT 后的数字代表返回几条记录，OFFSET 后的数字代表从第几条记录开始
+SELECT * FROM employees LIMIT 5 OFFSET 5
 
+方法二：只利用 LIMIT 关键字。注意：在 LIMIT X,Y 中，Y代表返回几条记录，X代表从第几条记录开始返回（第一条记录序号为0），切勿记反。
+SELECT * FROM employees LIMIT 5,5
 
+拓展：若每页显示n条记录，要显示第i页数据，则可以用 limit n*(i-1),n 
+n*(i-1)要算出来
+```
 
+**SQL259 异常的邮件概率**
 
+```sql
+select
+    e.date,
+    round(
+        sum + case when 语句统计个数
+        sum(
+            case
+                e.type
+                when 'no_completed' then 1
+                else 0
+            end
+        ) / count(*),
+        3
+    )
+from
+    email e
+    inner join user u1 on e.send_id = u1.id
+    and u1.is_blacklist = 0
+    inner join user u2 on e.receive_id = u2.id
+    and u2.is_blacklist = 0
+group by
+    e.date
+order by
+    e.date
+```
 
+**SQL261** **牛客每个人最近的登录日期(二)**
 
-
-
-
-
-
+```sql
+select
+    u.name as u_n,
+    c.name as c_n,
+    lg.date as date
+from
+    login lg
+    inner join user u on lg.user_id = u.id
+    inner join client c on lg.client_id = c.id
+where 注意这个用法
+    (lg.user_id, lg.date) in (
+        select
+            user_id,
+            max(date)
+        from
+            login
+        group by
+            user_id
+    )
+order by
+    u_n
+```
 

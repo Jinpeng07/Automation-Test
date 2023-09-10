@@ -280,3 +280,108 @@ order by
     u_n
 ```
 
+floor向下取整, ceil向上取整
+
+**日期函数格式转换**
+
+```sql
+DATE_FORMAT(``date``,format)
+
+常用格式	对应描述
+%Y	--年，4 位
+%m	--月，数值（00-12）
+%M	--月名
+%k	--小时（0-23）
+```
+
+**SQL282** **最差是第几名(二) **正序和和逆序和求中位数
+
+```sql
+当某一数的正序和逆序累计均大于整个序列的数字个数的一半即为中位数
+
+select
+    grade
+from
+    (
+        select
+            grade,
+            (
+                select
+                    sum(number)
+                from
+                    class_grade
+            ) as total,
+            sum(number) over (
+                order by
+                    grade
+            ) a,
+            sum(number) over (
+                order by
+                    grade desc
+            ) b
+        from
+            class_grade
+    ) t1
+where
+    a >= total / 2       正序和12，大于等于6的，为C,D，
+    and b >= total / 2   逆序和为12，大于等于6的为ABC，所以最后中位数为C
+order by
+    grade;
+
+```
+
+**SQL284** **获得积分最多的人(二)**
+
+```
+创建临时表语法
+with
+    temp_table as (
+        select
+            u.id,
+            u.name,
+            t.gsum
+        from
+            user u
+            inner join (
+                select
+                    user_id,
+                    sum(grade_num) as gsum
+                from
+                    grade_info
+                group by
+                    user_id
+            ) t on u.id = t.user_id
+        order by
+            u.id desc
+    )
+select
+    id,
+    name,
+    gsum
+from
+    temp_table
+where
+    gsum = (
+        select
+            max(gsum)
+        from
+            temp_table
+    )
+order by
+    id
+```
+
+遇到排名第几的问题可以用开窗函数rank denserank等等，也可以用where = 具体的值
+
+
+
+
+
+
+
+
+
+
+
+
+

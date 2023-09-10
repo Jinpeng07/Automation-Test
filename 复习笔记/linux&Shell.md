@@ -486,7 +486,7 @@ bash q.sh {a..z}
 26
 ```
 
-**$和$@**
+**$*和$@**
 
 ```shell
 测试$*和$@，注意，此时不带双引号：
@@ -518,7 +518,7 @@ echo $0 1
 
 ```shell
 echo
-echo在屏幕上输出信息
+echo 在屏幕上输出信息
 
 eval
 eval，当Shell程序执行到eval语句时，Shell读入参数args，并将它们组合成一个新的命令，然后执行。
@@ -745,6 +745,180 @@ case "$num" in
    echo "error"
 esac
 ```
+
+# **循环语句**
+
+## **1.while**循环
+
+```shell
+while循环语句的基本语法为
+
+while <条件表达式>
+do
+ 指令
+done
+
+until循环语句的语法为: 不常用
+until <条件表达式>
+do
+ 指令
+done
+
+uptime 命令会显示一行信息，依次为：当前时间、系统已经运行了多长时间、目前有多少用户登录、系统在过去的 1 分钟、5 分钟和 15 分钟内的平均负载。输出结果等同于 top 命令汇总区的第一行。
+创建uptime-demo.sh
+while true # 条件用于为真，会一直运行
+do
+ uptime
+ sleep 2 # 让程序暂停2秒，控制循环的频率，否则会消耗大量的系统资源
+done
+
+改进程序，将负载值追加到log里
+while [ 1 ] # 使用条件表达式表示条件为真
+do
+ uptime >>/tmp/uptime.log # 将信息输入到log文件中
+ sleep 2
+done
+```
+
+## **2.** **脚本后台运行**
+
+```shell
+通过在脚本的结尾使用&符号来在后台运行脚本
+
+bash uptime-demo.sh &
+tail -f /tmp/uptime.log # 使用tail命令实时观察结果
+```
+
+![image-20230910212734632](C:\Users\Jinpeng\AppData\Roaming\Typora\typora-user-images\image-20230910212734632.png)
+
+```shell
+创建test.sh脚本测试
+
+while true # 条件用于为真，会一直运行
+do
+ uptime
+ sleep 2 # 让程序暂停2秒，控制循环的频率，否则会消耗大量的系统资源
+done
+
+bash test.sh #前台运行脚本
+     13:14:48 up  1:27,  1 user, load average: 0.00, 0.01, 0.05
+     13:14:50 up  1:27,  1 user, load average: 0.00, 0.01, 0.05
+     ..
+^C # 使用ctrl+c关闭程序
+bash test.sh & #后台运行脚本
+ [1] 7534
+fg # 执行fg命令，将脚本放到前台执行
+^Z # 使用ctrl+z，暂停脚本执行
+ [1]+ 已停止               bash test.sh
+bg # 将脚本放到后台执行
+jobs # 查看当前shell下运行的脚本任务
+ [1]+ 运行中               bash test.sh &
+fg 1 # 使用fg+编号调出程序
+```
+
+## **3. for**循环
+
+```shell
+第一种for循环语句为变量取值型，语法结构如下：
+
+for 变量名 in 变量取值列表
+do
+ 指令
+done
+在此结构中“in变量取值列表”可以省略，省略时相当于in“$@”，也就是使用for i就相当于使用for i in “$@"
+
+第二种for循环语句称为C语言型for循环语句，其语法结构如下：
+
+for ((exp1;exp2;exp3))
+do
+ 指令
+done
+
+eg.
+for ((i=1;i<=3;i++))
+do
+ echo $i
+done
+```
+
+# Shell 函数
+
+```shell
+标准写法
+function 函数名() {
+ 指令
+ return n
+}
+
+简化写法
+function 函数名 {
+ 指令
+ return n
+}
+```
+
+## **执行与调用**
+
+```shell
+return语句会返回一个退出值（即返回值）给调用函数的当前程序，而exit会返回一个退出值（即
+返回值）给执行程序的当前Shell。
+
+function f1(){
+ echo "call f1"
+}
+f1
+务必要先定义函数然后再执行函数，否则会报错
+
+分离函数体和执行函数的脚本文件，创建functions.sh脚本
+# 判断脚本文件是否存在，如果存在则加载
+. /opt/scripts/functions.sh 加载文件，类似import
+[ -f /opt/scripts/functions.sh ] && . /opt/scripts/functions.sh || exit 1
+# 调用函数
+f1
+
+调用函数时，传递参数
+function f2(){
+ echo "call f2 arg=$1"
+}
+# 调用
+f2 hello
+```
+
+## break、continue、exit、return的区别
+
+![image-20230910220254185](C:\Users\Jinpeng\AppData\Roaming\Typora\typora-user-images\image-20230910220254185.png)
+
+# 监控Web和数据库的运行状态
+
+![image-20230910222957427](C:\Users\Jinpeng\AppData\Roaming\Typora\typora-user-images\image-20230910222957427.png)
+
+```shell
+ 监测MySQL数据库异常
+ 
+ if [ `netstat -lntup|grep mysqld|wc -l` -gt 0 ]; then
+ echo "MySQL is Running"
+else
+ echo "MySQL is Stopped"
+ systemctl start mysqld
+fi
+
+监控Nginx Web服务异常
+
+if [ `netstat -lntup|grep nginx|wc -l` -gt 0]; then
+ echo 'Nginx is Runing'
+else
+ echo "Nginx is Stopped"
+ systemctl start nginx
+fi
+```
+
+
+
+
+
+
+
+
 
 
 

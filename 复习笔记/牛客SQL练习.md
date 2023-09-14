@@ -371,9 +371,24 @@ order by
     id
 ```
 
+```
 遇到排名第几的问题可以用开窗函数rank denserank等等，也可以用where = 具体的值
+```
 
-
+```
+1.添加列
+alter table 表名 add column 列名 类型 【first|after 字段名】;
+2.修改列的类型或约束
+alter table 表名 modify column 列名 新类型 【新约束】;
+3.修改列名
+alter table 表名 change column 旧列名 新列名 类型;
+4 .删除列
+alter table 表名 drop column 列名;
+5.修改表名
+alter table 表名 rename 【to】 新表名;
+6.将某一列放到第一列
+alter table 表名 modify column 列名 类型 first;
+```
 
 
 
